@@ -90,14 +90,14 @@ namespace Trinity
         void Visit(PlayerMapType   &);
     };
 
-     struct AIRelocationNotifier
-     {
+    struct AIRelocationNotifier
+    {
         Unit &i_unit;
         bool isCreature;
         explicit AIRelocationNotifier(Unit &unit) : i_unit(unit), isCreature(unit.GetTypeId() == TYPEID_UNIT)  {}
         template<class T> void Visit(GridRefManager<T> &) {}
         void Visit(CreatureMapType &);
-     };
+    };
 
     struct GridUpdater
     {
@@ -445,6 +445,22 @@ namespace Trinity
             : i_phaseMask(searcher->GetPhaseMask()), i_objects(objects), i_check(check) {}
 
         void Visit(PlayerMapType &m);
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+    template<class Check>
+    struct PlayerLastSearcher
+    {
+        uint32 i_phaseMask;
+        Player* &i_object;
+        Check& i_check;
+
+        PlayerLastSearcher(WorldObject const* searcher, Player*& result, Check& check) : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check)
+        {
+        }
+
+        void Visit(PlayerMapType& m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -805,6 +821,26 @@ namespace Trinity
             float i_range;
     };
 
+    class AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck
+    {
+    public:
+        AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck(Unit const* funit, float range)
+            : i_funit(funit), i_range(range) {}
+
+        bool operator()(const Unit* u)
+        {
+            return u->isAlive()
+                && i_funit->IsWithinDistInMap(u, i_range)
+                && !i_funit->IsFriendlyTo(u)
+                && i_funit->canAttack(u)
+                && u->GetCreatureType() != CREATURE_TYPE_CRITTER
+                && i_funit->canSeeOrDetect(u);
+        }
+    private:
+        Unit const* i_funit;
+        float i_range;
+    };
+
     class AnyUnfriendlyVisibleUnitInObjectRangeCheck
     {
         public:
@@ -1141,6 +1177,30 @@ namespace Trinity
         WorldObject const* i_obj;
         bool    i_alive;
         float i_range;
+    };
+
+    class NearestPlayerInObjectRangeCheck
+    {
+    public:
+        NearestPlayerInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range)
+        {
+        }
+
+        bool operator()(Player* u)
+        {
+            if (u->isAlive() && i_obj->IsWithinDistInMap(u, i_range))
+            {
+                i_range = i_obj->GetDistance(u);
+                return true;
+            }
+
+            return false;
+        }
+    private:
+        WorldObject const* i_obj;
+        float i_range;
+
+        NearestPlayerInObjectRangeCheck(NearestPlayerInObjectRangeCheck const&);
     };
 
     class AllFriendlyCreaturesInGrid

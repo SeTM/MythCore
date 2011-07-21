@@ -122,15 +122,16 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_TARGET_ANY:
             case TARGET_UNIT_TARGET_ENEMY:
             case TARGET_UNIT_TARGET_PARTY:
-            case TARGET_UNIT_PARTY_TARGET:
-            case TARGET_UNIT_CLASS_TARGET:
+            case TARGET_UNIT_TARGET_PASSENGER:
+            case TARGET_UNIT_TARGET_ALLY_PARTY:
+            case TARGET_UNIT_TARGET_CLASS_RAID:
             case TARGET_UNIT_CHAINHEAL:
                 SpellTargetType[i] = TARGET_TYPE_UNIT_TARGET;
                 break;
             case TARGET_UNIT_NEARBY_ENEMY:
             case TARGET_UNIT_NEARBY_ALLY:
-            case TARGET_UNIT_NEARBY_ALLY_UNK:
             case TARGET_UNIT_NEARBY_ENTRY:
+            case TARGET_UNIT_NEARBY_PARTY:
             case TARGET_UNIT_NEARBY_RAID:
             case TARGET_GAMEOBJECT_NEARBY_ENTRY:
                 SpellTargetType[i] = TARGET_TYPE_UNIT_NEARBY;
@@ -221,7 +222,7 @@ SpellMgr::SpellMgr()
 
     for (int32 i = 0; i < TOTAL_SPELL_TARGETS; ++i)
     {
-        switch(i)
+        switch (i)
         {
             case TARGET_UNIT_AREA_ENEMY_DST:
             case TARGET_UNIT_AREA_ENEMY_SRC:
@@ -231,7 +232,7 @@ SpellMgr::SpellMgr()
             case TARGET_UNIT_AREA_ENTRY_SRC:
             case TARGET_UNIT_AREA_PARTY_DST:
             case TARGET_UNIT_AREA_PARTY_SRC:
-            case TARGET_UNIT_PARTY_TARGET:
+            case TARGET_UNIT_TARGET_ALLY_PARTY:
             case TARGET_UNIT_PARTY_CASTER:
             case TARGET_UNIT_CONE_ENEMY:
             case TARGET_UNIT_CONE_ALLY:
@@ -317,8 +318,8 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell* spell)
 
     int32 castTime = spellCastTimeEntry->CastTime;
 
-    if (spell && spell->GetCaster())
-        spell->GetCaster()->ModSpellCastTime(spellInfo, castTime, spell);
+    if (Unit *caster = (spell ? spell->GetCaster() : NULL))
+        caster->ModSpellCastTime(spellInfo, castTime, spell);
 
     if (spellInfo->Attributes & SPELL_ATTR0_REQ_AMMO && (!spell || !(spell->IsAutoRepeat())))
         castTime += 500;
@@ -991,10 +992,6 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
     if (!IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex], spellproto->EffectImplicitTargetB[effIndex]))
         return false;
 
-    // AttributesEx check
-    if (spellproto->AttributesEx & SPELL_ATTR1_NEGATIVE)
-        return false;
-
     if (!deep && spellproto->EffectTriggerSpell[effIndex]
         && !spellproto->EffectApplyAuraName[effIndex]
         && IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex], spellproto->EffectImplicitTargetB[effIndex])
@@ -1342,46 +1339,6 @@ void SpellMgr::LoadSpellProcEvents()
     sLog->outString();
 }
 
-void SpellMgr::LoadSpellBonusess()
-{
-    uint32 oldMSTime = getMSTime();
-
-    mSpellBonusMap.clear();                             // need for reload case
-    uint32 count = 0;
-    //                                                0      1             2          3         4
-    QueryResult result = WorldDatabase.Query("SELECT entry, direct_bonus, dot_bonus, ap_bonus, ap_dot_bonus FROM spell_bonus_data");
-    if (!result)
-    {
-        sLog->outString(">> Loaded %u spell bonus data", count);
-        sLog->outString();
-        return;
-    }
-
-    do
-    {
-        Field *fields = result->Fetch();
-        uint32 entry = fields[0].GetUInt32();
-
-        const SpellEntry *spell = sSpellStore.LookupEntry(entry);
-        if (!spell)
-        {
-            sLog->outErrorDb("Spell %u listed in `spell_bonus_data` does not exist", entry);
-            continue;
-        }
-
-        SpellBonusEntry& sbe = mSpellBonusMap[entry];
-        sbe.direct_damage = fields[1].GetFloat();
-        sbe.dot_damage    = fields[2].GetFloat();
-        sbe.ap_bonus      = fields[3].GetFloat();
-        sbe.ap_dot_bonus   = fields[4].GetFloat();
-
-        ++count;
-    } while (result->NextRow());
-
-    sLog->outString(">> Loaded %u extra spell bonus data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-    sLog->outString();
-}
-
 bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellProcEvent, uint32 EventProcFlag, SpellEntry const* procSpell, uint32 procFlags, uint32 procExtra, bool active)
 {
     // No extra req need
@@ -1511,6 +1468,253 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
     return false;
 }
 
+void SpellMgr::LoadSpellProcs()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellProcMap.clear();                             // need for reload case
+
+    uint32 count = 0;
+
+    //                                               0        1           2                3                 4                 5                 6         7              8               9        10              11             12      13        14
+    QueryResult result = WorldDatabase.Query("SELECT spellId, schoolMask, spellFamilyName, spellFamilyMask0, spellFamilyMask1, spellFamilyMask2, typeMask, spellTypeMask, spellPhaseMask, hitMask, attributesMask, ratePerMinute, chance, cooldown, charges FROM spell_proc");
+    if (!result)
+    {
+        sLog->outString(">> Loaded %u spell proc conditions and data", count);
+        sLog->outString();
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        int32 spellId = fields[0].GetInt32();
+
+        bool allRanks = false;
+        if (spellId <=0)
+        {
+            allRanks = true;
+            spellId = -spellId;
+        }
+
+        SpellEntry const* spellEntry = sSpellStore.LookupEntry(spellId);
+        if (!spellEntry)
+        {
+            sLog->outErrorDb("Spell %u listed in `spell_proc` does not exist", spellId);
+            continue;
+        }
+
+        if (allRanks)
+        {
+            if (sSpellMgr->GetFirstSpellInChain(spellId) != uint32(spellId))
+            {
+                sLog->outErrorDb("Spell %u listed in `spell_proc` is not first rank of spell.", fields[0].GetInt32());
+                continue;
+            }
+        }
+
+        SpellProcEntry baseProcEntry;
+
+        baseProcEntry.schoolMask      = fields[1].GetUInt32();
+        baseProcEntry.spellFamilyName = fields[2].GetUInt32();
+        baseProcEntry.spellFamilyMask[0] = fields[3].GetUInt32();
+        baseProcEntry.spellFamilyMask[1] = fields[4].GetUInt32();
+        baseProcEntry.spellFamilyMask[2] = fields[5].GetUInt32();
+        baseProcEntry.typeMask        = fields[6].GetUInt32();
+        baseProcEntry.spellTypeMask   = fields[7].GetUInt32();
+        baseProcEntry.spellPhaseMask  = fields[8].GetUInt32();
+        baseProcEntry.hitMask         = fields[9].GetUInt32();
+        baseProcEntry.attributesMask  = fields[10].GetUInt32();
+        baseProcEntry.ratePerMinute   = fields[11].GetFloat();
+        baseProcEntry.chance          = fields[12].GetFloat();
+        float cooldown                = fields[13].GetFloat();
+        baseProcEntry.cooldown        = uint32(cooldown);
+        baseProcEntry.charges         = fields[14].GetUInt32();
+
+        while(true)
+        {
+            if (mSpellProcMap.find(spellId) != mSpellProcMap.end())
+            {
+                sLog->outErrorDb("Spell %u listed in `spell_proc` has duplicate entry in the table", spellId);
+                break;
+            }
+            SpellProcEntry procEntry = SpellProcEntry(baseProcEntry);
+
+            // take defaults from dbcs
+            if (!procEntry.typeMask)
+                procEntry.typeMask = spellEntry->procFlags;
+            if (!procEntry.charges)
+                procEntry.charges = spellEntry->procCharges;
+            if (!procEntry.chance && !procEntry.ratePerMinute)
+                procEntry.chance = float(spellEntry->procChance);
+
+            // validate data
+            if (procEntry.schoolMask & ~SPELL_SCHOOL_MASK_ALL)
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has wrong `schoolMask` set: %u", spellId, procEntry.schoolMask);
+            if (procEntry.spellFamilyName && (procEntry.spellFamilyName < 3 || procEntry.spellFamilyName > 17 || procEntry.spellFamilyName == 14 || procEntry.spellFamilyName == 16))
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has wrong `spellFamilyName` set: %u", spellId, procEntry.spellFamilyName);
+            if (procEntry.chance < 0)
+            {
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has negative value in `chance` field", spellId);
+                procEntry.chance = 0;
+            }
+            if (procEntry.ratePerMinute < 0)
+            {
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has negative value in `ratePerMinute` field", spellId);
+                procEntry.ratePerMinute = 0;
+            }
+            if (cooldown < 0)
+            {
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has negative value in `cooldown` field", spellId);
+                procEntry.cooldown = 0;
+            }
+            if (procEntry.chance == 0 && procEntry.ratePerMinute == 0)
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u doesn't have `chance` and `ratePerMinute` values defined, proc will not be triggered", spellId);
+            if (procEntry.charges > 99)
+            {
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has too big value in `charges` field", spellId);
+                procEntry.charges = 99;
+            }
+            if (!procEntry.typeMask)
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u doesn't have `typeMask` value defined, proc will not be triggered", spellId);
+            if (procEntry.spellTypeMask & ~PROC_SPELL_PHASE_MASK_ALL)
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has wrong `spellTypeMask` set: %u", spellId, procEntry.spellTypeMask);
+            if (procEntry.spellTypeMask && !(procEntry.typeMask & (SPELL_PROC_FLAG_MASK | PERIODIC_PROC_FLAG_MASK)))
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has `spellTypeMask` value defined, but it won't be used for defined `typeMask` value", spellId);
+            if (!procEntry.spellPhaseMask && procEntry.typeMask & REQ_SPELL_PHASE_PROC_FLAG_MASK)
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u doesn't have `spellPhaseMask` value defined, but it's required for defined `typeMask` value, proc will not be triggered", spellId);
+            if (procEntry.spellPhaseMask & ~PROC_SPELL_PHASE_MASK_ALL)
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has wrong `spellPhaseMask` set: %u", spellId, procEntry.spellPhaseMask);
+            if (procEntry.spellPhaseMask && !(procEntry.typeMask & REQ_SPELL_PHASE_PROC_FLAG_MASK))
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has `spellPhaseMask` value defined, but it won't be used for defined `typeMask` value", spellId);
+            if (procEntry.hitMask & ~PROC_HIT_MASK_ALL)
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has wrong `hitMask` set: %u", spellId, procEntry.hitMask);
+            if (procEntry.hitMask && !(procEntry.typeMask & TAKEN_HIT_PROC_FLAG_MASK || (procEntry.typeMask & DONE_HIT_PROC_FLAG_MASK && (!procEntry.spellPhaseMask || procEntry.spellPhaseMask & (PROC_SPELL_PHASE_HIT | PROC_SPELL_PHASE_FINISH)))))
+                sLog->outErrorDb("`spell_proc` table entry for spellId %u has `hitMask` value defined, but it won't be used for defined `typeMask` and `spellPhaseMask` values", spellId);
+
+            mSpellProcMap[spellId] = procEntry;
+
+            if (allRanks)
+            {
+                spellId = sSpellMgr->GetNextSpellInChain(spellId);
+                spellEntry = sSpellStore.LookupEntry(spellId);
+            }
+            else
+                break;
+        }
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outString(">> Loaded %u spell proc conditions and data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
+}
+
+bool SpellMgr::CanSpellTriggerProcOnEvent(SpellProcEntry const& procEntry, ProcEventInfo& eventInfo)
+{
+    // proc type doesn't match
+    if (!(eventInfo.GetTypeMask() & procEntry.typeMask))
+        return false;
+
+    // check XP or honor target requirement
+    if (procEntry.attributesMask & PROC_ATTR_REQ_EXP_OR_HONOR)
+        if (Player* actor = eventInfo.GetActor()->ToPlayer())
+            if (eventInfo.GetActionTarget() && !actor->isHonorOrXPTarget(eventInfo.GetActionTarget()))
+                return false;
+
+    // always trigger for these types
+    if (eventInfo.GetTypeMask() & (PROC_FLAG_KILLED | PROC_FLAG_KILL | PROC_FLAG_DEATH))
+        return true;
+
+    // check school mask (if set) for other trigger types
+    if (procEntry.schoolMask && !(eventInfo.GetSchoolMask() & procEntry.schoolMask))
+        return false;
+
+    // check spell family name/flags (if set) for spells
+    if (eventInfo.GetTypeMask() & (PERIODIC_PROC_FLAG_MASK | SPELL_PROC_FLAG_MASK | PROC_FLAG_DONE_TRAP_ACTIVATION))
+    {
+        if (procEntry.spellFamilyName && (procEntry.spellFamilyName != eventInfo.GetSpellInfo()->SpellFamilyName))
+            return false;
+
+        if (procEntry.spellFamilyMask && !(procEntry.spellFamilyMask & eventInfo.GetSpellInfo()->SpellFamilyFlags))
+            return false;
+    }
+
+    // check spell type mask (if set)
+    if (eventInfo.GetTypeMask() & (SPELL_PROC_FLAG_MASK | PERIODIC_PROC_FLAG_MASK))
+    {
+        if (procEntry.spellTypeMask && !(eventInfo.GetSpellTypeMask() & procEntry.spellTypeMask))
+            return false;
+    }
+
+    // check spell phase mask
+    if (eventInfo.GetTypeMask() & REQ_SPELL_PHASE_PROC_FLAG_MASK)
+    {
+        if (!(eventInfo.GetSpellPhaseMask() & procEntry.spellPhaseMask))
+            return false;
+    }
+
+    // check hit mask (on taken hit or on done hit, but not on spell cast phase)
+    if ((eventInfo.GetTypeMask() & TAKEN_HIT_PROC_FLAG_MASK) || ((eventInfo.GetTypeMask() & DONE_HIT_PROC_FLAG_MASK) && !(eventInfo.GetSpellPhaseMask() & PROC_SPELL_PHASE_CAST)))
+    {
+        uint32 hitMask = procEntry.hitMask;
+        // get default values if hit mask not set
+        if (!hitMask)
+        {
+            // for taken procs allow normal + critical hits by default
+            if (eventInfo.GetTypeMask() & TAKEN_HIT_PROC_FLAG_MASK)
+                hitMask |= PROC_HIT_NORMAL | PROC_HIT_CRITICAL;
+            // for done procs allow normal + critical + absorbs by default
+            else
+                hitMask |= PROC_HIT_NORMAL | PROC_HIT_CRITICAL | PROC_HIT_ABSORB;
+        }
+        if (!(eventInfo.GetHitMask() & hitMask))
+            return false;
+    }
+
+    return true;
+}
+
+void SpellMgr::LoadSpellBonusess()
+{
+    uint32 oldMSTime = getMSTime();
+
+    mSpellBonusMap.clear();                             // need for reload case
+    uint32 count = 0;
+    //                                                0      1             2          3         4
+    QueryResult result = WorldDatabase.Query("SELECT entry, direct_bonus, dot_bonus, ap_bonus, ap_dot_bonus FROM spell_bonus_data");
+    if (!result)
+    {
+        sLog->outString(">> Loaded %u spell bonus data", count);
+        sLog->outString();
+        return;
+    }
+
+    do
+    {
+        Field *fields = result->Fetch();
+        uint32 entry = fields[0].GetUInt32();
+
+        SpellEntry const* spell = sSpellStore.LookupEntry(entry);
+        if (!spell)
+        {
+            sLog->outErrorDb("Spell %u listed in `spell_bonus_data` does not exist", entry);
+            continue;
+        }
+
+        SpellBonusEntry& sbe = mSpellBonusMap[entry];
+        sbe.direct_damage = fields[1].GetFloat();
+        sbe.dot_damage    = fields[2].GetFloat();
+        sbe.ap_bonus      = fields[3].GetFloat();
+        sbe.ap_dot_bonus   = fields[4].GetFloat();
+
+        ++count;
+    } while (result->NextRow());
+
+    sLog->outString(">> Loaded %u extra spell bonus data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    sLog->outString();
+}
+
 void SpellMgr::LoadSpellGroups()
 {
     uint32 oldMSTime = getMSTime();
@@ -1524,7 +1728,6 @@ void SpellMgr::LoadSpellGroups()
     QueryResult result = WorldDatabase.Query("SELECT id, spell_id FROM spell_group");
     if (!result)
     {
-
         sLog->outString();
         sLog->outString(">> Loaded %u spell group definitions", count);
         return;
@@ -1608,7 +1811,6 @@ void SpellMgr::LoadSpellGroupStackRules()
     QueryResult result = WorldDatabase.Query("SELECT group_id, stack_rule FROM spell_group_stack_rules");
     if (!result)
     {
-
         sLog->outString(">> Loaded 0 spell group stack rules");
         sLog->outString();
         return;
@@ -1655,7 +1857,6 @@ void SpellMgr::LoadSpellThreats()
     QueryResult result = WorldDatabase.Query("SELECT entry, Threat FROM spell_threat");
     if (!result)
     {
-
         sLog->outString(">> Loaded %u aggro generating spells", count);
         sLog->outString();
         return;
@@ -2003,7 +2204,6 @@ void SpellMgr::LoadSpellLearnSpells()
     QueryResult result = WorldDatabase.Query("SELECT entry, SpellID, Active FROM spell_learn_spell");
     if (!result)
     {
-
         sLog->outString(">> Loaded 0 spell learn spells");
         sLog->outString();
         sLog->outErrorDb("`spell_learn_spell` table is empty!");
@@ -2173,8 +2373,7 @@ void SpellMgr::LoadPetLevelupSpellMap()
 
     for (uint32 i = 0; i < sCreatureFamilyStore.GetNumRows(); ++i)
     {
-
-        CreatureFamilyEntry const *creatureFamily = sCreatureFamilyStore.LookupEntry(i);
+        CreatureFamilyEntry const* creatureFamily = sCreatureFamilyStore.LookupEntry(i);
         if (!creatureFamily)                                     // not exist
             continue;
 
@@ -2864,9 +3063,13 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
         }
         case SPELLFAMILY_PALADIN:
         {
+            // Judgement of Justice - limit duration to 10s in PvP
+            if (spellproto->SpellFamilyFlags[0] & 0x100000)
+                return DIMINISHING_LIMITONLY;
             // Turn Evil
-            if ((spellproto->SpellFamilyFlags[1] & 0x804000) && spellproto->SpellIconID == 309)
+            else if ((spellproto->SpellFamilyFlags[1] & 0x804000) && spellproto->SpellIconID == 309)
                 return DIMINISHING_FEAR;
+            break;
         }
         case SPELLFAMILY_PRIEST:
         {
@@ -2916,7 +3119,7 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             if (spellproto->SpellFamilyFlags[0] & 0x80000)
                 return DIMINISHING_HORROR;
             // Curses/etc
-            else if (spellproto->SpellFamilyFlags[0] & 0x80000000)
+            else if ((spellproto->SpellFamilyFlags[0] & 0x80000000) || (spellproto->SpellFamilyFlags[1] & 0x200))
                 return DIMINISHING_LIMITONLY;
             // Seduction
             else if (spellproto->SpellFamilyFlags[1] & 0x10000000)
@@ -2936,22 +3139,24 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
                 return DIMINISHING_CHARGE;
             break;
         }
+        // Must be below SPELLFAMILY_WARRIOR for Charge to work
         case SPELLFAMILY_GENERIC:
         {
-            switch (spellproto->Id)
-            {
-                // Screams of the Dead
-                case 51750:
-                    return DIMINISHING_NONE;
-                default:
-                    break;
-            }
             // Pet charge effects (Infernal Awakening, Demon Charge)
             if (spellproto->SpellVisual[0] == 2816 && spellproto->SpellIconID == 15)
                 return DIMINISHING_CONTROLLED_STUN;
             // Gnaw
             else if (spellproto->Id == 47481)
                 return DIMINISHING_CONTROLLED_STUN;
+
+            switch (spellproto->Id)
+            {
+                // Screams of the Dead
+            case 51750:
+                return DIMINISHING_NONE;
+            default:
+                break;
+            }
         }
         default:
             break;
@@ -3024,6 +3229,12 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellEntry cons
             // Banish - limit to 6 seconds in PvP
             if (spellproto->SpellFamilyFlags[1] & 0x8000000)
                 return 6 * IN_MILLISECONDS;
+            // Curse of Tongues - limit to 12 seconds in PvP
+            else if (spellproto->SpellFamilyFlags[2] & 0x800)
+                return 12 * IN_MILLISECONDS;
+            // Curse of Elements - limit to 120 seconds in PvP
+            else if (spellproto->SpellFamilyFlags[1] & 0x200)
+               return 120 * IN_MILLISECONDS;
             break;
         }
         default:
@@ -3219,8 +3430,7 @@ bool SpellMgr::CanAurasStack(Aura const *aura1, Aura const *aura2, bool sameCast
 
     if (!sameCaster)
     {
-        if (spellInfo_1->AttributesEx & SPELL_ATTR1_STACK_FOR_DIFF_CASTERS
-            || spellInfo_1->AttributesEx3 & SPELL_ATTR3_STACK_FOR_DIFF_CASTERS)
+        if (spellInfo_1->AttributesEx3 & SPELL_ATTR3_STACK_FOR_DIFF_CASTERS)
             return true;
 
         // check same periodic auras
@@ -3353,7 +3563,6 @@ void SpellMgr::LoadSpellEnchantProcData()
     QueryResult result = WorldDatabase.Query("SELECT entry, customChance, PPMChance, procEx FROM spell_enchant_proc_data");
     if (!result)
     {
-
         sLog->outString(">> Loaded %u spell enchant proc event conditions", count);
         sLog->outString();
         return;
@@ -3398,7 +3607,6 @@ void SpellMgr::LoadSpellRequired()
 
     if (!result)
     {
-
         sLog->outString(">> Loaded 0 spell required records");
         sLog->outString();
         sLog->outErrorDb("`spell_required` table is empty!");
@@ -3455,7 +3663,6 @@ void SpellMgr::LoadSpellRanks()
 
     if (!result)
     {
-
         sLog->outString(">> Loaded 0 spell rank records");
         sLog->outString();
         sLog->outErrorDb("`spell_ranks` table is empty!");
@@ -3762,7 +3969,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 20337:
             case 63320: // Glyph of Life Tap
             // Entries were not updated after spell effect change, we have to do that manually :/
-                spellInfo->AttributesEx3 |= SPELL_ATTR3_CAN_PROC_TRIGGERED;
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED;
                 ++count;
                 break;
             case 31117: // Unstable Affliction
@@ -3840,7 +4047,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 64844: // Divine Hymn
             case 64904: // Hymn of Hope
-                spellInfo->AttributesEx &= ~SPELL_ATTR1_NEGATIVE;
+                spellInfo->AttributesEx &= ~SPELL_ATTR1_CANT_BE_REFLECTED;
                 ++count;
                 break;
             case 44978: case 45001: case 45002: // Wild Magic
@@ -4088,7 +4295,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             // some dummy spell only has dest, should push caster in this case
             case 62324: // Throw Passenger
-                spellInfo->Targets |= TARGET_FLAG_UNIT_CASTER;
+                spellInfo->Targets |= TARGET_FLAG_UNIT_ALLY;
                 ++count;
                 break;
             case 66665: // Burning Breath
@@ -4494,7 +4701,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 70588: // Suppression
             case 70602: // Corruption
-                spellInfo->AttributesEx |= SPELL_ATTR1_STACK_FOR_DIFF_CASTERS;
+                spellInfo->AttributesEx |= SPELL_ATTR1_CHANNEL_TRACK_TARGET;
                 ++count;
                 break;
             case 70715: // Column of Frost (visual marker)
@@ -4652,8 +4859,7 @@ void SpellMgr::LoadEnchantCustomAttr()
 
     for (uint32 i = 0; i < GetSpellStore()->GetNumRows(); ++i)
     {
-
-        SpellEntry * spellInfo = (SpellEntry*)GetSpellStore()->LookupEntry(i);
+        SpellEntry* spellInfo = (SpellEntry*)GetSpellStore()->LookupEntry(i);
         if (!spellInfo)
             continue;
 

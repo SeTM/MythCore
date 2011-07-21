@@ -813,7 +813,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     // Get the account information from the realmd database
     std::string safe_account = account; // Duplicate, else will screw the SHA hash verification below
-    LoginDatabase.escape_string (safe_account);
+    LoginDatabase.EscapeString (safe_account);
     // No SQL injection, username escaped.
 
     QueryResult result =
@@ -888,7 +888,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     if (security > SEC_ADMINISTRATOR)                        // prevent invalid security settings in DB
         security = SEC_ADMINISTRATOR;
         */
-        
+
     K.SetHexStr (fields[1].GetCString());
 
     time_t mutetime = time_t (fields[7].GetUInt64());
@@ -987,7 +987,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     // Update the last_ip in the database
     // No SQL injection, username escaped.
-    LoginDatabase.escape_string (address);
+    LoginDatabase.EscapeString (address);
 
     LoginDatabase.PExecute ("UPDATE account "
                             "SET last_ip = '%s' "

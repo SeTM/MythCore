@@ -140,7 +140,7 @@ void PoolGroup<T>::AddEntry(PoolObject& poolitem, uint32 maxentries)
 template <class T>
 bool PoolGroup<T>::CheckPool() const
 {
-    if (!EqualChanced.size())
+    if (EqualChanced.empty())
     {
         float chance = 0;
         for (uint32 i = 0; i < ExplicitlyChanced.size(); ++i)
@@ -496,7 +496,7 @@ void PoolGroup<Quest>::SpawnObject(ActivePoolData& spawns, uint32 limit, uint32 
         Spawn1Object(&tempObj);
         newQuests.erase(itr);
         --limit;
-    } while (limit && newQuests.size());
+    } while (limit && !newQuests.empty());
 
     // if we are here it means the pool is initialized at startup and did not have previous saved state
     if (!triggerFrom)
@@ -645,6 +645,7 @@ void PoolMgr::LoadFromDB()
                 ++count;
             }
             while (result->NextRow());
+
             sLog->outString(">> Loaded %u creatures in pools in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
             sLog->outString();
         }

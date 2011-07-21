@@ -218,7 +218,7 @@ bool ChatHandler::HandleAddItemCommand(const char *args)
         if (citemName && citemName[0])
         {
             std::string itemName = citemName+1;
-            WorldDatabase.escape_string(itemName);
+            WorldDatabase.EscapeString(itemName);
             QueryResult result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE name = '%s'", itemName.c_str());
             if (!result)
             {
@@ -3177,7 +3177,7 @@ bool ChatHandler::HandleBanInfoIPCommand(const char *args)
 
     std::string IP = cIP;
 
-    LoginDatabase.escape_string(IP);
+    LoginDatabase.EscapeString(IP);
     QueryResult result = LoginDatabase.PQuery("SELECT ip, FROM_UNIXTIME(bandate), FROM_UNIXTIME(unbandate), unbandate-UNIX_TIMESTAMP(), banreason, bannedby, unbandate-bandate FROM ip_banned WHERE ip = '%s'", IP.c_str());
     if (!result)
     {
@@ -3286,7 +3286,7 @@ bool ChatHandler::HandleBanListAccountCommand(const char *args)
 
     char* cFilter = strtok((char*)args, " ");
     std::string filter = cFilter ? cFilter : "";
-    LoginDatabase.escape_string(filter);
+    LoginDatabase.EscapeString(filter);
 
     QueryResult result;
 
@@ -3391,7 +3391,7 @@ bool ChatHandler::HandleBanListIPCommand(const char *args)
 
     char* cFilter = strtok((char*)args, " ");
     std::string filter = cFilter ? cFilter : "";
-    LoginDatabase.escape_string(filter);
+    LoginDatabase.EscapeString(filter);
 
     QueryResult result;
 
@@ -3735,6 +3735,56 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 break;
         }
     }
+    return true;
+}
+
+bool ChatHandler::HandleServerPLimitCommand(const char *args)
+{
+    if (*args)
+    {
+        char* param = strtok((char*)args, " ");
+        if (!param)
+            return false;
+
+        int l = strlen(param);
+
+        if (strncmp(param, "player", l) == 0)
+            sWorld->SetPlayerSecurityLimit(SEC_PLAYER);
+        else if (strncmp(param, "moderator", l) == 0)
+            sWorld->SetPlayerSecurityLimit(SEC_MODERATOR);
+        else if (strncmp(param, "gamemaster", l) == 0)
+            sWorld->SetPlayerSecurityLimit(SEC_GAMEMASTER);
+        else if (strncmp(param, "administrator", l) == 0)
+            sWorld->SetPlayerSecurityLimit(SEC_ADMINISTRATOR);
+        else if (strncmp(param, "reset", l) == 0)
+        {
+            sWorld->SetPlayerAmountLimit(sConfig->GetIntDefault("PlayerLimit", 100));
+            sWorld->LoadDBAllowedSecurityLevel();
+        }
+        else
+        {
+            int val = atoi(param);
+            if (val < 0)
+                sWorld->SetPlayerSecurityLimit(AccountTypes(uint32(-val)));
+            else
+                sWorld->SetPlayerAmountLimit(uint32(val));
+        }
+    }
+
+    uint32 pLimit = sWorld->GetPlayerAmountLimit();
+    AccountTypes allowedAccountType = sWorld->GetPlayerSecurityLimit();
+    char const* secName = "";
+    switch(allowedAccountType)
+    {
+        case SEC_PLAYER:        secName = "Player";        break;
+        case SEC_MODERATOR:     secName = "Moderator";     break;
+        case SEC_GAMEMASTER:    secName = "Gamemaster";    break;
+        case SEC_ADMINISTRATOR: secName = "Administrator"; break;
+        default:                secName = "<unknown>";     break;
+    }
+
+    PSendSysMessage("Player limits: amount %u, min. security level %s.", pLimit, secName);
+
     return true;
 }
 

@@ -578,6 +578,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
             if (!IsSpellValid(e, e.action.castCreatureOrGO.spell)) return false;
             break;
 
+
         case SMART_ACTION_SET_EVENT_PHASE:
             if (e.action.setEventPhase.phase >= SMART_EVENT_PHASE_MAX)
             {
@@ -767,6 +768,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder &e)
         case SMART_ACTION_SET_DYNAMIC_FLAG:
         case SMART_ACTION_ADD_DYNAMIC_FLAG:
         case SMART_ACTION_REMOVE_DYNAMIC_FLAG:
+        case SMART_ACTION_JUMP_TO_POS:
             break;
         default:
             sLog->outErrorDb("SmartAIMgr: Not handled action_type(%u), event_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);

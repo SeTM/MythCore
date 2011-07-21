@@ -97,6 +97,67 @@ void SystemMgr::LoadScriptTexts()
     sLog->outString();
 }
 
+void SystemMgr::LoadScriptTextsCustom()
+{
+    sLog->outString("TSCR: Loading Custom Texts...");
+    LoadTrinityStrings("custom_texts", TEXT_SOURCE_RANGE*2, 1+(TEXT_SOURCE_RANGE*3));
+
+    sLog->outString("TSCR: Loading Custom Texts additional data...");
+
+    QueryResult result = WorldDatabase.Query("SELECT entry, sound, type, language, emote FROM custom_texts");
+
+    if (!result)
+    {
+        sLog->outString(">> Loaded 0 additional Custom Texts data. DB table `custom_texts` is empty.");
+        sLog->outString();
+        return;
+    }
+
+    uint32 uiCount = 0;
+
+    do
+    {
+        Field* pFields = result->Fetch();
+        StringTextData pTemp;
+
+        int32 iId              = pFields[0].GetInt32();
+        pTemp.uiSoundId        = pFields[1].GetUInt32();
+        pTemp.uiType           = pFields[2].GetUInt32();
+        pTemp.uiLanguage       = pFields[3].GetUInt32();
+        pTemp.uiEmote          = pFields[4].GetUInt32();
+
+        if (iId >= 0)
+        {
+            sLog->outErrorDb("TSCR: Entry %i in table `custom_texts` is not a negative value.", iId);
+            continue;
+        }
+
+        if (iId > TEXT_SOURCE_RANGE*2 || iId <= TEXT_SOURCE_RANGE*3)
+        {
+            sLog->outErrorDb("TSCR: Entry %i in table `custom_texts` is out of accepted entry range for table.", iId);
+            continue;
+        }
+
+        if (pTemp.uiSoundId)
+        {
+            if (!GetSoundEntriesStore()->LookupEntry(pTemp.uiSoundId))
+                sLog->outErrorDb("TSCR: Entry %i in table `custom_texts` has soundId %u but sound does not exist.", iId, pTemp.uiSoundId);
+        }
+
+        if (!GetLanguageDescByID(pTemp.uiLanguage))
+            sLog->outErrorDb("TSCR: Entry %i in table `custom_texts` using Language %u but Language does not exist.", iId, pTemp.uiLanguage);
+
+        if (pTemp.uiType > CHAT_TYPE_ZONE_YELL)
+            sLog->outErrorDb("TSCR: Entry %i in table `custom_texts` has Type %u but this Chat Type does not exist.", iId, pTemp.uiType);
+
+        m_mTextDataMap[iId] = pTemp;
+        ++uiCount;
+    } while (result->NextRow());
+
+    sLog->outString(">> Loaded %u additional Custom Texts data.", uiCount);
+    sLog->outString();
+}
+
 void SystemMgr::LoadScriptWaypoints()
 {
     uint32 oldMSTime = getMSTime();

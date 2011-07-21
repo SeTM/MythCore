@@ -1770,6 +1770,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             delete targets;
             break;
         }
+        case SMART_ACTION_JUMP_TO_POS:
+        {
+            me->GetMotionMaster()->MoveJump(e.target.x, e.target.y , e.target.z, (float)e.action.jump.speedxy, (float)e.action.jump.speedz);
+            break;
+        }
         default:
             sLog->outErrorDb("SmartScript::ProcessAction: Unhandled Action type %u", e.GetActionType());
             break;
@@ -2817,7 +2822,7 @@ void SmartScript::OnMoveInLineOfSight(Unit* who)
 }
 
 /*
-void SmartScript::UpdateAIWhileCharmed(uint32 const diff)
+void SmartScript::UpdateAIWhileCharmed(const uint32 diff)
 {
 }
 

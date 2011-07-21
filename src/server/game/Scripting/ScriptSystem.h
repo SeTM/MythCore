@@ -73,6 +73,7 @@ class SystemMgr
         //Database
         void LoadVersion();
         void LoadScriptTexts();
+        void LoadScriptTextsCustom();
         void LoadScriptWaypoints();
 
         //Retrive from storage

@@ -935,6 +935,8 @@ void World::LoadConfigSettings(bool reload)
         m_timers[WUPDATE_CLEANDB].Reset();
     }
     m_int_configs[CONFIG_LOGDB_CLEARTIME] = sConfig->GetIntDefault("LogDB.Opt.ClearTime", 1209600); // 14 days default
+    sLog->outString("Will clear `logs` table of entries older than %i seconds every %u minutes.",
+        m_int_configs[CONFIG_LOGDB_CLEARTIME], m_int_configs[CONFIG_LOGDB_CLEARINTERVAL]);
 
     m_int_configs[CONFIG_SKILL_CHANCE_ORANGE] = sConfig->GetIntDefault("SkillChance.Orange", 100);
     m_int_configs[CONFIG_SKILL_CHANCE_YELLOW] = sConfig->GetIntDefault("SkillChance.Yellow", 75);
@@ -1348,6 +1350,9 @@ void World::SetInitialWorldSettings()
     sLog->outString("Loading Spell Proc Event conditions...");
     sSpellMgr->LoadSpellProcEvents();
 
+    sLog->outString("Loading Spell Proc conditions and data...");
+    sSpellMgr->LoadSpellProcs();
+
     sLog->outString("Loading Spell Bonus Data...");
     sSpellMgr->LoadSpellBonusess();
 
@@ -1745,7 +1750,7 @@ void World::SetInitialWorldSettings()
     sLog->outString("Starting Battleground System");
     sBattlegroundMgr->CreateInitialBattlegrounds();
     sBattlegroundMgr->InitAutomaticArenaPointDistribution();
-    
+
     ///- Initialize outdoor pvp
     sLog->outString("Starting Outdoor PvP System");
     sOutdoorPvPMgr->InitOutdoorPvP();
@@ -1767,7 +1772,7 @@ void World::SetInitialWorldSettings()
 
     sLog->outString("Calculate random battleground reset time..." );
     InitRandomBGResetTime();
-    
+
     // possibly enable db logging; avoid massive startup spam by doing it here.
     if (sLog->GetLogDBLater())
     {
