@@ -997,7 +997,7 @@ void WorldSession::ProcessQueryCallbacks()
         QueryResultFuture lResult;
         ACE_Time_Value timeout = ACE_Time_Value::zero;
         if (m_nameQueryCallbacks.next_readable(lResult, &timeout) != 1)
-           break;
+            break;
 
         if (lResult.ready())
         {
@@ -1015,6 +1015,13 @@ void WorldSession::ProcessQueryCallbacks()
         m_charEnumCallback.cancel();
     }
 
+    if (_charCreateCallback.IsReady())
+    {
+        PreparedQueryResult pResult;
+        _charCreateCallback.GetResult(pResult);
+        HandleCharCreateCallback(pResult, _charCreateCallback.GetParam());
+        // Don't call FreeResult() here, the callback handler will do that depending on the events in the callback chain
+    }
     //! HandlePlayerLoginOpcode
     if (m_charLoginCallback.ready())
     {
