@@ -477,8 +477,6 @@ class spell_marrowgar_bone_spike_graveyard : public SpellScriptLoader
                         // select any unit but not the tank
                         Unit* target = marrowgarAI->SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true, -SPELL_IMPALED);
                         // try the tank only in first iteration
-                        if (!target && !i)
-                            target = marrowgarAI->SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true, -SPELL_IMPALED);
                         if (!target)
                             return;
                         target->CastCustomSpell(boneSpikeSummonId[i], SPELLVALUE_BASE_POINT0, 0, target, true);
