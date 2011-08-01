@@ -992,6 +992,10 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
     if (!IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex], spellproto->EffectImplicitTargetB[effIndex]))
         return false;
 
+    // AttributesEx check
+    if (spellproto->AttributesEx & SPELL_ATTR1_CANT_BE_REFLECTED)
+        return false;
+
     if (!deep && spellproto->EffectTriggerSpell[effIndex]
         && !spellproto->EffectApplyAuraName[effIndex]
         && IsPositiveTarget(spellproto->EffectImplicitTargetA[effIndex], spellproto->EffectImplicitTargetB[effIndex])
@@ -2122,13 +2126,12 @@ SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spell
         return spellInfo;
 
     bool needRankSelection = false;
-    for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (IsPositiveEffect(spellInfo->Id, i) && (
-            spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA ||
+        if (IsPositiveEffect(spellInfo->Id, i) && 
+            (spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AURA ||
             spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PARTY ||
-            spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_RAID
-))
+            spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_RAID))
         {
             needRankSelection = true;
             break;
