@@ -83,6 +83,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                 DeathbringerSaurfangDoorGUID = 0;
                 DeathbringerSaurfangEventGUID = 0;
                 DeathbringersCacheGUID = 0;
+                GunShipBattleCacheAGuid = 0;
+                GunShipBattleCacheHGuid = 0;
                 SaurfangTeleportGUID = 0;
                 PlagueSigilGUID = 0;
                 BloodwingSigilGUID = 0;
@@ -418,6 +420,18 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case GO_DEATHBRINGER_S_CACHE_25H:
                         DeathbringersCacheGUID = go->GetGUID();
                         break;
+                    case GO_GUNSHIP_ARMORY_A_10:
+                    case GO_GUNSHIP_ARMORY_A_25:
+                    case GO_GUNSHIP_ARMORY_A_10H:
+                    case GO_GUNSHIP_ARMORY_A_25H:
+                        GunShipBattleCacheAGuid = go->GetGUID();
+                        break;
+                    case GO_GUNSHIP_ARMORY_H_10:
+                    case GO_GUNSHIP_ARMORY_H_25:
+                    case GO_GUNSHIP_ARMORY_H_10H:
+                    case GO_GUNSHIP_ARMORY_H_25H:
+                        GunShipBattleCacheHGuid = go->GetGUID();
+                        break;
                     case GO_SCOURGE_TRANSPORTER_SAURFANG:
                         SaurfangTeleportGUID = go->GetGUID();
                         break;
@@ -736,13 +750,15 @@ class instance_icecrown_citadel : public InstanceMapScript
                         switch(state)
                         {
                             case DONE:
+                                DoRespawnGameObject(GunShipBattleCacheAGuid, 7*DAY);
+                                DoRespawnGameObject(GunShipBattleCacheHGuid, 7*DAY);
                                 break;
                             case NOT_STARTED:
                                 break;
                         }
                         break;
                     case DATA_LADY_DEATHWHISPER:
-                        SetBossState(DATA_GUNSHIP_EVENT, state); // TEMP HACK UNTIL GUNSHIP SCRIPTED
+                        //SetBossState(DATA_GUNSHIP_EVENT, state); // TEMP HACK UNTIL GUNSHIP SCRIPTED
                         if (state == DONE)
                         {
                             if (GameObject* elevator = instance->GetGameObject(LadyDeathwisperElevatorGUID))
@@ -1326,6 +1342,8 @@ class instance_icecrown_citadel : public InstanceMapScript
             std::set<uint64> ColdflameJetGUIDs;
             uint64 LadyDeathwisperElevatorGUID;
             uint64 DeathbringerSaurfangGUID;
+            uint64 GunShipBattleCacheAGuid;
+            uint64 GunShipBattleCacheHGuid;
             uint64 DeathbringerSaurfangDoorGUID;
             uint64 DeathbringerSaurfangEventGUID; // Muradin Bronzebeard or High Overlord Saurfang
             uint64 DeathbringersCacheGUID;
