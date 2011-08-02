@@ -1838,7 +1838,7 @@ int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const* spellEntry, uint8 e
             level = int32(spellEntry->maxLevel);
         else if (level < int32(spellEntry->baseLevel))
             level = int32(spellEntry->baseLevel);
-        level -= int32(spellEntry->spellLevel);
+        //level -= int32(spellEntry->spellLevel); why?
         basePoints += int32(level * basePointsPerLevel);
     }
 
