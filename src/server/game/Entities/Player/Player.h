@@ -210,7 +210,7 @@ struct PlayerClassLevelInfo
 
 struct PlayerClassInfo
 {
-    PlayerClassInfo() : levelInfo(NULL) {}
+    PlayerClassInfo() : levelInfo(NULL) { }
 
     PlayerClassLevelInfo* levelInfo;                        //[level-1] 0..MaxPlayerLevel-1
 };
@@ -1101,7 +1101,7 @@ class Player : public Unit, public GridObject<Player>
         }
         void SummonIfPossible(bool agree);
 
-        bool Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId);
+        bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
 
         void Update(uint32 time);
 
@@ -1562,8 +1562,14 @@ class Player : public Unit, public GridObject<Player>
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_GOLD_VALUE_OWNED);
         }
 
-        RewardedQuestSet& getRewardedQuests() { return m_RewardedQuests; }
+        RewardedQuestSet const& getRewardedQuests() const { return m_RewardedQuests; }
         QuestStatusMap& getQuestStatusMap() { return m_QuestStatus; };
+
+        size_t GetRewardedQuestCount() const { return m_RewardedQuests.size(); }
+        bool IsQuestRewarded(uint32 quest_id) const
+        {
+            return m_RewardedQuests.find(quest_id) != m_RewardedQuests.end();
+        }
 
         const uint64& GetSelection() const { return m_curSelection; }
         Unit *GetSelectedUnit() const;
@@ -1635,7 +1641,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SendProficiency(ItemClass itemClass, uint32 itemSubclassMask);
         void SendInitialSpells();
-        bool addSpell(uint32 spell_id, bool active, bool learning, bool dependent, bool disabled);
+        bool addSpell(uint32 spell_id, bool active, bool learning, bool dependent, bool disabled, bool loading = false);
         void learnSpell(uint32 spell_id, bool dependent);
         void removeSpell(uint32 spell_id, bool disabled = false, bool learn_low_rank = true);
         void resetSpells(bool myClassOnly = false);
@@ -1695,7 +1701,8 @@ class Player : public Unit, public GridObject<Player>
         bool IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mod, Spell* spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = NULL);
         void RemoveSpellMods(Spell* spell);
-        void RestoreSpellMods(Spell* spell, uint32 ownerAuraId=0);
+        void RestoreSpellMods(Spell* spell, uint32 ownerAuraId = 0, Aura* aura = NULL);
+        void RestoreAllSpellMods(uint32 ownerAuraId = 0, Aura* aura = NULL);
         void DropModCharge(SpellModifier* mod, Spell* spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
 
@@ -1904,6 +1911,7 @@ class Player : public Unit, public GridObject<Player>
         void ApplyManaRegenBonus(int32 amount, bool apply);
         void ApplyHealthRegenBonus(int32 amount, bool apply);
         void UpdateManaRegen();
+        void UpdateRuneRegen(RuneType rune);
 
         const uint64& GetLootGUID() const { return m_lootGuid; }
         void SetLootGUID(const uint64 &guid) { m_lootGuid = guid; }

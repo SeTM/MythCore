@@ -86,16 +86,13 @@ typedef ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_NULL_SYNCH> WorldHandler;
  * notification.
  *
  */
-class WorldSocket : protected WorldHandler
+class WorldSocket : public WorldHandler
 {
     public:
-        /// Declare some friends
-        friend class ACE_Acceptor< WorldSocket, ACE_SOCK_ACCEPTOR >;
-        friend class WorldSocketMgr;
-        friend class ReactorRunnable;
+        WorldSocket (void);
+        virtual ~WorldSocket (void);
 
-        /// Declare the acceptor for this class
-        typedef ACE_Acceptor< WorldSocket, ACE_SOCK_ACCEPTOR > Acceptor;
+        friend class WorldSocketMgr;
 
         /// Mutex type used for various synchronizations.
         typedef ACE_Thread_Mutex LockType;
@@ -121,10 +118,7 @@ class WorldSocket : protected WorldHandler
         /// Remove reference to this object.
         long RemoveReference (void);
 
-    protected:
         /// things called by ACE framework.
-        WorldSocket (void);
-        virtual ~WorldSocket (void);
 
         /// Called on open , the void* is the acceptor.
         virtual int open (void *);

@@ -257,7 +257,7 @@ VehicleAI::VehicleAI(Creature *c) : CreatureAI(c), m_vehicle(c->GetVehicleKit())
 }
 
 //NOTE: VehicleAI::UpdateAI runs even while the vehicle is mounted
-void VehicleAI::UpdateAI(uint32 const diff)
+void VehicleAI::UpdateAI(const uint32 diff)
 {
     CheckConditions(diff);
 

@@ -9,6 +9,7 @@
  * You can't share Myth Project's sources! Only for personal use.
  */
 
+
 #include "Common.h"
 #include "ObjectMgr.h"
 #include "World.h"

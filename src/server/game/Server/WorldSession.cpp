@@ -104,6 +104,8 @@ m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter), m_Warden(NULL)
         ResetTimeOutTime();
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
     }
+
+    InitializeQueryCallbackParameters();
 }
 
 /// WorldSession destructor
@@ -338,7 +340,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         ///- If necessary, log the player out
         if (ShouldLogOut(currTime) && !m_playerLoading)
             LogoutPlayer(true);
-            
 
         ///- Cleanup socket pointer if need
         if (m_Socket && m_Socket->IsClosed())
@@ -761,6 +762,36 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo *mi)
 
     if (mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
         data >> mi->splineElevation;
+
+    // This must be a packet spoofing attempt. MOVEMENTFLAG_ROOT sent from the client is not valid,
+    // and when used in conjunction with any of the moving movement flags such as MOVEMENTFLAG_FORWARD
+    // it will freeze clients that receive this player's movement info.
+    if (mi->HasMovementFlag(MOVEMENTFLAG_ROOT))
+        mi->flags &= ~MOVEMENTFLAG_ROOT;
+
+    // Cannot hover and jump at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_HOVER) && mi->HasMovementFlag(MOVEMENTFLAG_JUMPING))
+        mi->flags &= ~MOVEMENTFLAG_JUMPING;
+
+    // Cannot ascend and descend at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_ASCENDING) && mi->HasMovementFlag(MOVEMENTFLAG_DESCENDING))
+        mi->flags &= ~(MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING);
+
+    // Cannot move left and right at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_RIGHT))
+        mi->flags &= ~(MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT);
+
+    // Cannot strafe left and right at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_LEFT) && mi->HasMovementFlag(MOVEMENTFLAG_STRAFE_RIGHT))
+        mi->flags &= ~(MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT);
+
+    // Cannot pitch up and down at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_PITCH_UP) && mi->HasMovementFlag(MOVEMENTFLAG_PITCH_DOWN))
+        mi->flags &= ~(MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN);
+
+    // Cannot move forwards and backwards at the same time
+    if (mi->HasMovementFlag(MOVEMENTFLAG_FORWARD) && mi->HasMovementFlag(MOVEMENTFLAG_BACKWARD))
+        mi->flags &= ~(MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD);
 }
 
 void WorldSession::WriteMovementInfo(WorldPacket *data, MovementInfo *mi)
@@ -949,6 +980,13 @@ void WorldSession::SetPlayer(Player *plr)
         m_GUIDLow = _player->GetGUIDLow();
 }
 
+void WorldSession::InitializeQueryCallbackParameters()
+{
+    // Callback parameters that have pointers in them should be properly
+    // initialized to NULL here.
+    _charCreateCallback.SetParam(NULL);
+}
+
 void WorldSession::ProcessQueryCallbacks()
 {
     QueryResult result;
@@ -959,7 +997,7 @@ void WorldSession::ProcessQueryCallbacks()
         QueryResultFuture lResult;
         ACE_Time_Value timeout = ACE_Time_Value::zero;
         if (m_nameQueryCallbacks.next_readable(lResult, &timeout) != 1)
-           break;
+            break;
 
         if (lResult.ready())
         {
@@ -977,6 +1015,13 @@ void WorldSession::ProcessQueryCallbacks()
         m_charEnumCallback.cancel();
     }
 
+    if (_charCreateCallback.IsReady())
+    {
+        PreparedQueryResult pResult;
+        _charCreateCallback.GetResult(pResult);
+        HandleCharCreateCallback(pResult, _charCreateCallback.GetParam());
+        // Don't call FreeResult() here, the callback handler will do that depending on the events in the callback chain
+    }
     //! HandlePlayerLoginOpcode
     if (m_charLoginCallback.ready())
     {

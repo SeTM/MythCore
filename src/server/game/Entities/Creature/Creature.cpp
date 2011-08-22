@@ -234,6 +234,7 @@ void Creature::RemoveCorpse(bool setSpawnTime)
 
     m_corpseRemoveTime = time(NULL);
     setDeathState(DEAD);
+    RemoveAllAuras();
     UpdateObjectVisibility();
     loot.clear();
     uint32 respawnDelay = m_respawnDelay;
@@ -1444,7 +1445,7 @@ bool Creature::canStartAttack(Unit const* who, bool force) const
         if (!_IsTargetAcceptable(who))
             return false;
 
-        if (who->isInCombat())
+        if (who->isInCombat() && IsWithinDist(who, ATTACK_DISTANCE))
             if (Unit* victim = who->getAttackerForHelper())
                 if (IsWithinDistInMap(victim, sWorld->getFloatConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS)))
                     force = true;
@@ -1512,7 +1513,7 @@ void Creature::setDeathState(DeathState s)
 
     if (s == JUST_DIED)
     {
-        SetUInt64Value(UNIT_FIELD_TARGET, 0);                // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
+        SetTarget(0);                // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
         SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
         setActive(false);
@@ -1843,6 +1844,17 @@ Unit* Creature::SelectNearestTargetInAttackDistance(float dist) const
         cell.Visit(p, world_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE > dist ? ATTACK_DISTANCE : dist);
         cell.Visit(p, grid_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE > dist ? ATTACK_DISTANCE : dist);
     }
+
+    return target;
+}
+
+Player* Creature::SelectNearestPlayer(float distance) const
+{
+    Player* target = NULL;
+
+    Trinity::NearestPlayerInObjectRangeCheck checker(this, distance);
+    Trinity::PlayerLastSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(this, target, checker);
+    VisitNearbyObject(distance, searcher);
 
     return target;
 }
@@ -2330,14 +2342,16 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     if (time_t(vCount->lastIncrementTime + vItem->incrtime) <= ptime)
     {
+        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(vItem->item);
+
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
-        if ((vCount->count + diff) >= vItem->maxcount)
+        if ((vCount->count + diff * pProto->BuyCount) >= vItem->maxcount)
         {
             m_vendorItemCounts.erase(itr);
             return vItem->maxcount;
         }
 
-        vCount->count += diff;
+        vCount->count += diff * pProto->BuyCount;
         vCount->lastIncrementTime = ptime;
     }
 
@@ -2367,9 +2381,11 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
 
     if (time_t(vCount->lastIncrementTime + vItem->incrtime) <= ptime)
     {
+        ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(vItem->item);
+
         uint32 diff = uint32((ptime - vCount->lastIncrementTime)/vItem->incrtime);
-        if ((vCount->count + diff) < vItem->maxcount)
-            vCount->count += diff;
+        if ((vCount->count + diff * pProto->BuyCount) < vItem->maxcount)
+            vCount->count += diff * pProto->BuyCount;
         else
             vCount->count = vItem->maxcount;
     }

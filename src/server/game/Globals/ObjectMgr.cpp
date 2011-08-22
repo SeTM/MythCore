@@ -438,6 +438,7 @@ void ObjectMgr::LoadCreatureTemplates()
 
         uint32 entry = fields[0].GetUInt32();
 
+
         CreatureTemplate& creatureTemplate = CreatureTemplateStore[entry];
 
         creatureTemplate.Entry = entry;
@@ -1999,7 +2000,7 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
 {
     uint64 guid = 0;
 
-    CharacterDatabase.escape_string(name);
+    CharacterDatabase.EscapeString(name);
 
     // Player name safe to sending to DB (checked at login) and this function using
     QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
@@ -6388,6 +6389,7 @@ void ObjectMgr::SetHighestGuids()
         sGroupMgr->SetGroupDbStoreSize((*result)[0].GetUInt32()+1);
 }
 
+
 uint32 ObjectMgr::GenerateAuctionID()
 {
     if (m_auctionid >= 0xFFFFFFFE)
@@ -7987,7 +7989,7 @@ bool ObjectMgr::LoadTrinityStrings(char const* table, int32 min_value, int32 max
 
         TrinityStringLocale& data = mTrinityStringLocaleMap[entry];
 
-        if (data.Content.size() > 0)
+        if (!data.Content.empty())
         {
             sLog->outErrorDb("Table `%s` contain data for already loaded entry  %i (from another table?), ignored.", table, entry);
             continue;
@@ -8601,7 +8603,6 @@ void ObjectMgr::LoadGossipMenuItems()
 
     do
     {
-
         Field* fields = result->Fetch();
 
         GossipMenuItems gMenuItem;

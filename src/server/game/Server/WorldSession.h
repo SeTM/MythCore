@@ -30,6 +30,7 @@
 #include "World.h"
 #include "WardenBase.h"
 #include "Timer.h"
+#include "WorldPacket.h"
 
 struct ItemTemplate;
 struct AuctionEntry;
@@ -176,11 +177,45 @@ public:
     virtual bool Process(WorldPacket* packet);
 };
 
+// Proxy structure to contain data passed to callback function,
+// only to prevent bloating the parameter list
+class CharacterCreateInfo
+{
+    friend class WorldSession;
+    friend class Player;
+
+    protected:
+        CharacterCreateInfo(std::string name, uint8 race, uint8 cclass, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId,
+        WorldPacket& data) : Name(name), Race(race), Class(cclass), Gender(gender), Skin(skin), Face(face), HairStyle(hairStyle), HairColor(hairColor), FacialHair(facialHair),
+        OutfitId(outfitId), Data(data), CharCount(0), Stage(0)
+        {}
+
+        /// User specified variables
+        std::string Name;
+        uint8 Race;
+        uint8 Class;
+        uint8 Gender;
+        uint8 Skin;
+        uint8 Face;
+        uint8 HairStyle;
+        uint8 HairColor;
+        uint8 FacialHair;
+        uint8 OutfitId;
+        WorldPacket Data;
+
+        /// Server side data
+        uint8 CharCount;
+
+        /// Internal
+        uint8 Stage;        // Stage of the callback chain
+
+    private:
+        virtual ~CharacterCreateInfo(){};
+};
+
 /// Player session in the World
 class WorldSession
 {
-    friend class CharacterHandler;
-    friend class WardenBase;
     public:
         WorldSession(uint32 id, WorldSocket *sock, AccountTypes sec, bool ispremium, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter);
         ~WorldSession();
@@ -372,6 +407,7 @@ class WorldSession
         void HandleCharEnumOpcode(WorldPacket& recvPacket);
         void HandleCharDeleteOpcode(WorldPacket& recvPacket);
         void HandleCharCreateOpcode(WorldPacket& recvPacket);
+        void HandleCharCreateCallback(PreparedQueryResult result, CharacterCreateInfo* createInfo);
         void HandlePlayerLoginOpcode(WorldPacket& recvPacket);
         void HandleCharEnum(QueryResult result);
         void HandlePlayerLogin(LoginQueryHolder * holder);
@@ -864,6 +900,7 @@ class WorldSession
         void HandleUpdateProjectilePosition(WorldPacket& recvPacket);
 
     private:
+        void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
 
         ACE_Future_Set<QueryResult> m_nameQueryCallbacks;
@@ -875,6 +912,7 @@ class WorldSession
         QueryCallback<QueryResult, uint32> m_unstablePetCallback;
         QueryCallback<QueryResult, uint32> m_stableSwapCallback;
         QueryCallback<QueryResult, uint64> m_sendStabledPetCallback;
+        QueryCallback<PreparedQueryResult, CharacterCreateInfo*> _charCreateCallback;
         QueryResultHolderFuture m_charLoginCallback;
 
     private:
@@ -890,6 +928,7 @@ class WorldSession
         {
             return _allowedCharsToLogin.find(lowGUID) != _allowedCharsToLogin.end();
         }
+
         // this stores the GUIDs of the characters who can login
         // characters who failed on Player::BuildEnumData shouldn't login
         std::set<uint32> _allowedCharsToLogin;

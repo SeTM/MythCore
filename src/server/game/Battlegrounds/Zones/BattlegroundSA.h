@@ -481,12 +481,11 @@ class BattlegroundSA : public Battleground
         void EndBattleground(uint32 winner);
 
         /// CAlled when a player leave battleground
-        void RemovePlayer(Player *plr, uint64 guid);
+        void RemovePlayer(Player *plr, uint64 guid, uint32 team);
         void HandleAreaTrigger(Player *Source, uint32 Trigger);
 
         /* Scorekeeping */
         /// Update score board
-
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value, bool doAddHonor = true);
 
     private:

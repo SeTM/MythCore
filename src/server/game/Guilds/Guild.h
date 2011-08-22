@@ -312,9 +312,9 @@ private:
     class LogEntry
     {
     public:
-        LogEntry(uint32 guildId, uint32 guid) : m_guildId(guildId), m_guid(guid), m_timestamp(::time(NULL)) {}
-        LogEntry(uint32 guildId, uint32 guid, time_t timestamp) : m_guildId(guildId), m_guid(guid), m_timestamp(timestamp) {}
-        virtual ~LogEntry() {}
+        LogEntry(uint32 guildId, uint32 guid) : m_guildId(guildId), m_guid(guid), m_timestamp(::time(NULL)) { }
+        LogEntry(uint32 guildId, uint32 guid, time_t timestamp) : m_guildId(guildId), m_guid(guid), m_timestamp(timestamp) { }
+        virtual ~LogEntry() { }
 
         uint32 GetGUID() const { return m_guid; }
 
@@ -332,12 +332,12 @@ private:
     {
     public:
         EventLogEntry(uint32 guildId, uint32 guid, GuildEventLogTypes eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank) :
-            LogEntry(guildId, guid), m_eventType(eventType), m_playerGuid1(playerGuid1), m_playerGuid2(playerGuid2), m_newRank(newRank) {}
+            LogEntry(guildId, guid), m_eventType(eventType), m_playerGuid1(playerGuid1), m_playerGuid2(playerGuid2), m_newRank(newRank) { }
 
         EventLogEntry(uint32 guildId, uint32 guid, time_t timestamp, GuildEventLogTypes eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank) :
-            LogEntry(guildId, guid, timestamp), m_eventType(eventType), m_playerGuid1(playerGuid1), m_playerGuid2(playerGuid2), m_newRank(newRank) {}
+            LogEntry(guildId, guid, timestamp), m_eventType(eventType), m_playerGuid1(playerGuid1), m_playerGuid2(playerGuid2), m_newRank(newRank) { }
 
-        ~EventLogEntry() {}
+        ~EventLogEntry() { }
 
         void SaveToDB(SQLTransaction& trans) const;
         void WritePacket(WorldPacket& data) const;
@@ -363,13 +363,13 @@ private:
 
         BankEventLogEntry(uint32 guildId, uint32 guid, GuildBankEventLogTypes eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId) :
             LogEntry(guildId, guid), m_eventType(eventType), m_bankTabId(tabId), m_playerGuid(playerGuid),
-            m_itemOrMoney(itemOrMoney), m_itemStackCount(itemStackCount), m_destTabId(destTabId) {}
+            m_itemOrMoney(itemOrMoney), m_itemStackCount(itemStackCount), m_destTabId(destTabId) { }
 
         BankEventLogEntry(uint32 guildId, uint32 guid, time_t timestamp, uint8 tabId, GuildBankEventLogTypes eventType, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId) :
             LogEntry(guildId, guid, timestamp), m_eventType(eventType), m_bankTabId(tabId), m_playerGuid(playerGuid),
-            m_itemOrMoney(itemOrMoney), m_itemStackCount(itemStackCount), m_destTabId(destTabId) {}
+            m_itemOrMoney(itemOrMoney), m_itemStackCount(itemStackCount), m_destTabId(destTabId) { }
 
-        ~BankEventLogEntry() {}
+        ~BankEventLogEntry() { }
 
         void SaveToDB(SQLTransaction& trans) const;
         void WritePacket(WorldPacket& data) const;
@@ -413,9 +413,9 @@ private:
     class RankInfo
     {
     public:
-        RankInfo(uint32 guildId) : m_guildId(guildId), m_rankId(GUILD_RANK_NONE), m_rights(GR_RIGHT_EMPTY), m_bankMoneyPerDay(0) {}
+        RankInfo(uint32 guildId) : m_guildId(guildId), m_rankId(GUILD_RANK_NONE), m_rights(GR_RIGHT_EMPTY), m_bankMoneyPerDay(0) { }
         RankInfo(uint32 guildId, uint8 rankId, const std::string& name, uint32 rights, uint32 money) :
-            m_guildId(guildId), m_rankId(rankId), m_name(name), m_rights(rights), m_bankMoneyPerDay(money) {}
+            m_guildId(guildId), m_rankId(rankId), m_name(name), m_rights(rights), m_bankMoneyPerDay(money) { }
 
         void LoadFromDB(Field* fields);
         void SaveToDB(SQLTransaction& trans) const;
@@ -493,8 +493,8 @@ private:
     {
     public:
         MoveItemData(Guild* pGuild, Player* player, uint8 container, uint8 slotId) : m_pGuild(pGuild), m_pPlayer(player),
-            m_container(container), m_slotId(slotId), m_pItem(NULL), m_pClonedItem(NULL) {}
-        virtual ~MoveItemData() {}
+            m_container(container), m_slotId(slotId), m_pItem(NULL), m_pClonedItem(NULL) { }
+        virtual ~MoveItemData() { }
 
         virtual bool IsBank() const = 0;
         // Initializes item pointer. Returns true, if item exists, false otherwise.
@@ -539,7 +539,7 @@ private:
     {
     public:
         PlayerMoveItemData(Guild* pGuild, Player* player, uint8 container, uint8 slotId) :
-            MoveItemData(pGuild, player, container, slotId) {}
+            MoveItemData(pGuild, player, container, slotId) { }
 
         bool IsBank() const { return false; }
         bool InitItem();
@@ -554,7 +554,7 @@ private:
     {
     public:
         BankMoveItemData(Guild* pGuild, Player* player, uint8 container, uint8 slotId) :
-            MoveItemData(pGuild, player, container, slotId) {}
+            MoveItemData(pGuild, player, container, slotId) { }
 
         bool IsBank() const { return true; }
         bool InitItem();

@@ -47,6 +47,7 @@ BattlegroundDS::~BattlegroundDS()
 void BattlegroundDS::Update(uint32 diff)
 {
     Battleground::Update(diff);
+
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
         if (GetStartTime() >= 47*MINUTE*IN_MILLISECONDS)    // after 47 minutes without one team losing, the arena closes with no winner and no rating change
@@ -163,7 +164,7 @@ void BattlegroundDS::AddPlayer(Player *plr)
     UpdateArenaWorldState();
 }
 
-void BattlegroundDS::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
+void BattlegroundDS::RemovePlayer(Player* /*plr*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -183,7 +184,7 @@ void BattlegroundDS::HandleKillPlayer(Player* player, Player* killer)
         return;
     }
 
-    Battleground::HandleKillPlayer(player,killer);
+    Battleground::HandleKillPlayer(player, killer);
 
     UpdateArenaWorldState();
     CheckArenaWinConditions();

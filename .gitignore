@@ -1,22 +1,10 @@
-# use glob syntax.
-syntax: glob
-
-bin/
 build/
-CMakeFiles/
 .directory
-*.php
-*.lnk
-*.html
-*.patch
-*.diff
-*.rej
+.mailmap
 *.orig
-*.zip
-*.7zip
-*.rar
-*.tar.gz
+*.rej
+*~
 .hg/
-
-# use regexp syntax.
-syntax: regexp
+*.kdev*
+*.bak
+*.patch

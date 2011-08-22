@@ -26,10 +26,10 @@ enum BattlegroundDSObjectTypes
     BG_DS_OBJECT_DOOR_1         = 0,
     BG_DS_OBJECT_DOOR_2         = 1,
     BG_DS_OBJECT_WATER_1        = 2,
-    BG_DS_OBJECT_WATER_2        = 4,
-    BG_DS_OBJECT_BUFF_1         = 5,
-    BG_DS_OBJECT_BUFF_2         = 6,
-    BG_DS_OBJECT_MAX            = 7
+    BG_DS_OBJECT_WATER_2        = 3,
+    BG_DS_OBJECT_BUFF_1         = 4,
+    BG_DS_OBJECT_BUFF_2         = 5,
+    BG_DS_OBJECT_MAX            = 6
 };
 
 enum BattlegroundDSObjects
@@ -68,14 +68,14 @@ class BattlegroundDS : public Battleground
 
         /* inherited from BattlegroundClass */
         virtual void AddPlayer(Player *plr);
-        virtual void Reset();
-        virtual void FillInitialWorldStates(WorldPacket &d);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
-        void RemovePlayer(Player *plr, uint64 guid);
+        void RemovePlayer(Player *plr, uint64 guid, uint32 team);
         void HandleAreaTrigger(Player *Source, uint32 Trigger);
         bool SetupBattleground();
+        virtual void Reset();
+        virtual void FillInitialWorldStates(WorldPacket &d);
         void HandleKillPlayer(Player* player, Player* killer);
         bool HandlePlayerUnderMap(Player* plr);
     private:

@@ -193,7 +193,10 @@ void ObjectAccessor::RemoveCorpse(Corpse* corpse)
     ASSERT(corpse && corpse->GetType() != CORPSE_BONES);
 
     if (corpse->FindMap())
+    {
+        corpse->DestroyForNearbyPlayers();
         corpse->FindMap()->Remove(corpse, false);
+    }
     else
         corpse->RemoveFromWorld();
 
@@ -254,7 +257,7 @@ void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair, GridType& grid, 
     }
 }
 
-Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool /*insignia*/)
+Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia /*=false*/)
 {
     Corpse* corpse = GetCorpseForPlayerGUID(player_guid);
     if (!corpse)

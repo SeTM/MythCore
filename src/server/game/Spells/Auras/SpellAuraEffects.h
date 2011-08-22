@@ -35,6 +35,7 @@ class AuraEffect
         Aura * GetBase() const { return m_base; }
         void GetTargetList(std::list<Unit*> & targetList) const;
         void GetApplicationList(std::list<AuraApplication*> & applicationList) const;
+        SpellModifier* GetSpellModifier() const { return m_spellmod; }
 
         SpellEntry const* GetSpellProto() const { return m_spellProto; }
         uint32 GetId() const { return m_spellProto->Id; }
@@ -75,11 +76,9 @@ class AuraEffect
         bool IsAffectedOnSpell(SpellEntry const *spell) const;
 
         void SendTickImmune(Unit* target, Unit *caster) const;
-
         void PeriodicTick(AuraApplication * aurApp, Unit* caster) const;
-        void PeriodicDummyTick(Unit* target, Unit* caster) const;
-        void TriggerSpell(Unit* target, Unit* caster) const;
-        void TriggerSpellWithValue(Unit* target, Unit* caster) const;
+
+        void HandleProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
 
         void CleanupTriggeredSpells(Unit* target);
 
@@ -105,7 +104,7 @@ class AuraEffect
         bool IsPeriodicTickCrit(Unit* target, Unit const* caster) const;
 
     public:
-        // aura effect handlers
+        // aura effect apply/remove handlers
         void HandleNULL(AuraApplication const* /*aurApp*/, uint8 /*mode*/, bool /*apply*/) const
         {
             // not implemented
@@ -269,9 +268,29 @@ class AuraEffect
         void HandleAuraConvertRune(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraOpenStable(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModFakeInebriation(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraOverrideSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModFakeInebriation(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+
+        // aura effect periodic tick handlers
+        void HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicHealthFunnelAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) const;
+        void HandleObsModPowerAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicEnergizeAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicPowerBurnManaAuraTick(Unit* target, Unit* caster) const;
+
+        // aura effect proc handlers
+        void HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
+        void HandleProcTriggerSpellWithValueAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
+        void HandleProcTriggerDamageAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
+        void HandleRaidProcFromChargeAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
+        void HandleRaidProcFromChargeWithValueAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
 };
 
 namespace Trinity
@@ -280,7 +299,7 @@ namespace Trinity
     class AbsorbAuraOrderPred
     {
         public:
-            AbsorbAuraOrderPred() {}
+            AbsorbAuraOrderPred() { }
             bool operator() (AuraEffect * aurEffA, AuraEffect * aurEffB) const
             {
                 SpellEntry const* spellProtoA = aurEffA->GetSpellProto();

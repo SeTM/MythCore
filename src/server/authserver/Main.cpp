@@ -156,7 +156,7 @@ extern int main(int argc, char **argv)
 
     if (acceptor.open(bind_addr, ACE_Reactor::instance(), ACE_NONBLOCK) == -1)
     {
-        sLog->outError("Myth Realm can not bind to %s:%d", bind_ip.c_str(), rmport);
+        sLog->outError("Auth server can not bind to %s:%d", bind_ip.c_str(), rmport);
         return 1;
     }
 

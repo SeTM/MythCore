@@ -36,7 +36,7 @@
 #                     Logs directory must exists, or log file creation will be disabled.
 #        Default:     "" - (Log files will be stored in the current path)
 
-LogsDir = "D:\Downloads\Myth Project\Server\Logs"
+LogsDir = ""
 
 #
 #    MaxPingTime
@@ -82,9 +82,9 @@ LogLevel = 0
 #    LogFile
 #        Description: Log file for main server log.
 #        Default:     "Auth.log" - (Enabled)
-#                     ""         - (Disabled)
+#                     ""           - (Disabled)
 
-LogFile = ""
+LogFile = "Auth.log"
 
 #
 #    Debug Log Mask
@@ -233,9 +233,9 @@ WrongPass.BanType = 0
 #                                                                 section my.ini)
 #                     ".;/path/to/unix_socket;username;password;database" - (use Unix sockets on
 #                                                                           Unix/Linux)
-#        Default:     "127.0.0.1;3306;root;password;wow_login"
+#        Default:     "127.0.0.1;3306;trinity;trinity;auth"
 
-LoginDatabaseInfo = "127.0.0.1;3306;root;password;wow_login"
+LoginDatabaseInfo = "127.0.0.1;3306;trinity;trinity;auth"
 
 #
 #    LoginDatabase.WorkerThreads
