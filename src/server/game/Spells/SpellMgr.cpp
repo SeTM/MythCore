@@ -4778,13 +4778,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case SPELLFAMILY_PALADIN:
                 // Sanctified Retribution talent fix
-                if (spellInfo->SpellFamilyFlags[2] & 0x20 && spellInfo->SpellIconID == 555)
+                /*if (spellInfo->SpellFamilyFlags[2] & 0x20 && spellInfo->SpellIconID == 555)
                 {
                     spellInfo->Effect[1] = 0;
                     spellInfo->Effect[2] = 0;
                 }
                 else
-                    break;
+                    break;*/
                 if (spellInfo->SpellIconID == 25 && spellInfo->Attributes & SPELL_ATTR0_PASSIVE)
                     spellInfo->EffectSpellClassMask[0][1] |= 0x20000000;
                 else
