@@ -15053,12 +15053,13 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     if (log_slot < MAX_QUEST_LOG_SIZE)
         SetQuestSlot(log_slot, 0);
 
-    RewardedQuestSet::const_iterator rewItr = m_RewardedQuests.find(quest_id);
-    bool rewarded = (rewItr != m_RewardedQuests.end());
+    /*RewardedQuestSet::const_iterator rewItr = m_RewardedQuests.find(quest_id);
+    bool rewarded = (rewItr != m_RewardedQuests.end());*/
 
     // Not give XP in case already completed once repeatable quest
     //uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
-    uint32 XP = rewarded ? 0 : (GetSession()->IsPremium() != 0 ? uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_PREMIUM_QUEST)) : uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_QUEST)));
+    //uint32 XP = rewarded ? 0 : (GetSession()->IsPremium() != 0 ? uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_PREMIUM_QUEST)) : uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_QUEST)));
+    uint32 XP = GetSession()->IsPremium() != 0 ? uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_PREMIUM_QUEST)) : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
