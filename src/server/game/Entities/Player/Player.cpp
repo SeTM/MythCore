@@ -5565,7 +5565,7 @@ void Player::UpdateLocalChannels(uint32 newZone)
     {
         if (ChatChannelsEntry const* channel = sChatChannelsStore.LookupEntry(i))
         {
-            if (!(channel->flags & CHANNEL_DBC_FLAG_ZONE_DEP))
+            if (!(channel->flags & CHANNEL_DBC_FLAG_ZONE_DEP) && !(channel->flags & CHANNEL_DBC_FLAG_LFG))
                 continue;                                    // Not zone dependent, don't handle it here
 
             if ((channel->flags & CHANNEL_DBC_FLAG_GUILD_REQ) && GetGuildId())
