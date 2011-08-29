@@ -379,7 +379,7 @@ enum SpellAttr3
     SPELL_ATTR3_UNK5                             = 0x00000020, //  5
     SPELL_ATTR3_UNK6                             = 0x00000040, //  6
     SPELL_ATTR3_STACK_FOR_DIFF_CASTERS           = 0x00000080, //  7 separate stack for every caster
-    SPELL_ATTR3_PLAYERS_ONLY                     = 0x00000100, //  8 Player only?
+    SPELL_ATTR3_PLAYERS_ONLY_AND_IGNORE_LOS      = 0x00000100, //  8 Player only?
     SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2     = 0x00000200, //  9 triggered from effect?
     SPELL_ATTR3_MAIN_HAND                        = 0x00000400, // 10 Main hand weapon required
     SPELL_ATTR3_BATTLEGROUND                     = 0x00000800, // 11 Can casted only on battleground
