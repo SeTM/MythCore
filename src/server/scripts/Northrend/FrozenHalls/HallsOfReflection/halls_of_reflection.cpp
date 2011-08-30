@@ -1066,8 +1066,11 @@ public:
                     JumpNextStep(2500);
                     break;
                 case 7:
-                    if(pLichKing && !pLichKing->HasAura(SPELL_ICE_PRISON))
-                        pLichKing->CastSpell(pLichKing,me->GetEntry() == NPC_JAINA_OUTRO ? SPELL_ICE_PRISON : SPELL_DARK_ARROW,true);
+                    if(pLichKing)
+                    {
+                        if (!pLichKing->HasAura(SPELL_ICE_PRISON))
+                            pLichKing->CastSpell(pLichKing, me->GetEntry() == NPC_JAINA_OUTRO ? SPELL_ICE_PRISON : SPELL_DARK_ARROW,true);
+                    }
 
                     me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
                     me->AttackStop();
@@ -1079,7 +1082,10 @@ public:
                     }
 
                     if(me->GetEntry() == NPC_SYLVANA_OUTRO)
+                    {
+                        me->RemoveAurasDueToSpell(SPELL_DARK_ARROW);
                         DoScriptText(SAY_SYLVANA_AGGRO, me);
+                    }
 
                     JumpNextStep(3000);
                     break;
@@ -1091,6 +1097,7 @@ public:
                     break;
                 case 9:
                     me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
                     Count = 1;
                     JumpNextStep(100);
                     break;
