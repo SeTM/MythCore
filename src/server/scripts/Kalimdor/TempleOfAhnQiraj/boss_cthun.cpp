@@ -332,7 +332,7 @@ public:
                         {
                             //Face our target
                             DarkGlareAngle = me->GetAngle(pTarget);
-                            DarkGlareTickTimer = 1000;
+                            DarkGlareTickTimer = 3500;
                             DarkGlareTick = 0;
                             ClockWise = RAND(true, false);
                         }
@@ -343,7 +343,8 @@ public:
                         //Freeze animation
                         DoCast(me, SPELL_FREEZE_ANIM);
                         me->SetOrientation(DarkGlareAngle);
-                        me->StopMoving();
+                        me->SendMovementFlagUpdate();
+                        //me->StopMoving();
 
                         //Darkbeam for 35 seconds
                         PhaseTimer = 35000;
@@ -357,12 +358,12 @@ public:
                         if (DarkGlareTickTimer <= diff)
                         {
                             //Set angle and cast
+                            //me->StopMoving();
                             if (ClockWise)
                                 me->SetOrientation(DarkGlareAngle + DarkGlareTick * M_PI / 35);
                             else
                                 me->SetOrientation(DarkGlareAngle - DarkGlareTick * M_PI / 35);
-
-                            me->StopMoving();
+                            me->SendMovementFlagUpdate();
 
                             //Actual dark glare cast, maybe something missing here?
                             DoCast(me, SPELL_DARK_GLARE, false);
