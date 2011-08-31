@@ -1,2 +1,2 @@
 INSERT INTO `gossip_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2`, `dataint`, `x`, `y`, `z`, `o`) VALUES ('9596', '0', '17', '37888', '1', '0', '0', '0', '0', '0');
-UPDATE `gossip_menu_option` SET `action_script_id`='9596' WHERE (`menu_id`='9595') AND (`id`='0') LIMIT 1
+UPDATE `gossip_menu_option` SET `action_script_id`='9596' WHERE (`menu_id`='9595') AND (`id`='0') LIMIT 1;
