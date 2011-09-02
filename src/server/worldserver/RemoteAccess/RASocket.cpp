@@ -305,6 +305,9 @@ void RASocket::commandFinished(void* callbackArg, bool /*success*/)
 
     RASocket* socket = static_cast<RASocket*>(callbackArg);
 
+    if (!socket)
+        return;
+
     ACE_Message_Block* mb = new ACE_Message_Block();
 
     mb->msg_type(ACE_Message_Block::MB_BREAK);
