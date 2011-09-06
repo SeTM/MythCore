@@ -8,3 +8,5 @@ build/
 *.kdev*
 *.bak
 *.patch
+.cproject
+.project

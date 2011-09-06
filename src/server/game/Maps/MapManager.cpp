@@ -177,7 +177,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
     char const* mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
 
     Group* group = player->GetGroup();
-    if (entry->IsRaid())
+    if (entry->IsRaid() && mapid != 169)
     {
         // can only enter in a raid group
         if ((!group || !group->isRaidGroup()) && !sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_RAID))

@@ -15,6 +15,7 @@
 void AddSC_DuelReset();
 void AddSC_npc_lottery();
 void AddSC_vip_commandscript();
+void AddSC_npc_guildhouse_keeper();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -1215,5 +1216,6 @@ void AddCustomScripts()
     AddSC_DuelReset();
     AddSC_npc_lottery();
     AddSC_vip_commandscript();
+    AddSC_npc_guildhouse_keeper();
 #endif
 }
