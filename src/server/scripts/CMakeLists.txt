@@ -18,6 +18,7 @@ file(GLOB_RECURSE scripts_spells Spells/*.cpp Spells/*.h)
 file(GLOB_RECURSE scripts_outdoorpvp OutdoorPvP/*.cpp OutdoorPvP/*.h)
 file(GLOB_RECURSE scripts_commands Commands/*.cpp Commands/*.h)
 file(GLOB_RECURSE scripts_custom Custom/*.cpp Custom/*.h)
+file(GLOB_RECURSE scripts_guildhouses Guildhouses/*.cpp Guildhouses/*.h)
 
 source_group(EasternKingdoms FILES ${scripts_easternkingdoms})
 source_group(Kalimdor FILES ${scripts_kalimdor})
@@ -28,6 +29,7 @@ source_group(Spells FILES ${scripts_spells})
 source_group(OutdoorPvP FILES ${scripts_outdoorpvp})
 source_group(Commands FILES ${scripts_commands})
 source_group(Custom FILES ${scripts_custom})
+source_group(Guildhouses FILES ${scripts_guildhouses})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(scripts_STAT_SRCS
@@ -45,6 +47,7 @@ set(scripts_STAT_SRCS
   ${scripts_spells}
   ${scripts_outdoorpvp}
   ${scripts_commands}
+  ${scripts_guildhouses}
   ../game/AI/ScriptedAI/ScriptedEscortAI.cpp
   ../game/AI/ScriptedAI/ScriptedCreature.cpp
   ../game/AI/ScriptedAI/ScriptedFollowerAI.cpp

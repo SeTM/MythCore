@@ -2388,6 +2388,8 @@ void InstanceMap::Remove(Player* player, bool remove)
     Map::Remove(player, remove);
     // for normal instances schedule the reset after all players have left
     SetResetSchedule(true);
+    if (i_data)
+        i_data->OnPlayerExit(player);
 }
 
 void InstanceMap::CreateInstanceData(bool load)

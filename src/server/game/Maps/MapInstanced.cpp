@@ -150,10 +150,28 @@ Map* MapInstanced::CreateInstance(const uint32 mapId, Player* player)
         {
             // if no instanceId via group members or instance saves is found
             // the instance will be created for the first time
-            NewInstanceId = sMapMgr->GenerateInstanceId();
+            if (mapId == 169)
+            {
+                static uint32 gcid = 1;//sMapMgr->GenerateInstanceId();
+                NewInstanceId = gcid;
+                map = _FindMap(NewInstanceId);
+                // it is possible that the save exists but the map doesn't
+                if (!map)
+                {
+                    InstanceSave * save = sInstanceSaveMgr->AddInstanceSave(169,
+                            gcid, REGULAR_DIFFICULTY, 0, false, true);
+                    map = CreateInstance(NewInstanceId, pSave, REGULAR_DIFFICULTY);
+                }
 
-            Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficulty(IsRaid()) : player->GetDifficulty(IsRaid());
-            map = CreateInstance(NewInstanceId, NULL, diff);
+
+            }
+            else
+            {
+                NewInstanceId = sMapMgr->GenerateInstanceId();
+
+                Difficulty diff = player->GetGroup() ? player->GetGroup()->GetDifficulty(IsRaid()) : player->GetDifficulty(IsRaid());
+                map = CreateInstance(NewInstanceId, NULL, diff);
+            }
         }
     }
 

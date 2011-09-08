@@ -22,5 +22,5 @@ void AddOutlandScripts();
 void AddNorthrendScripts();
 void AddOutdoorPvPScripts();
 void AddCustomScripts();
-
+void AddGuildhouseScripts();
 #endif

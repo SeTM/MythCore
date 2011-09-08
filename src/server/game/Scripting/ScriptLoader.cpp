@@ -15,7 +15,10 @@
 void AddSC_DuelReset();
 void AddSC_npc_lottery();
 void AddSC_vip_commandscript();
+
+// Guildhouses
 void AddSC_npc_guildhouse_keeper();
+void AddSC_guildcity();
 
 // spells
 void AddSC_deathknight_spell_scripts();
@@ -609,6 +612,7 @@ void AddScripts()
     AddNorthrendScripts();
     AddOutdoorPvPScripts();
     AddCustomScripts();
+    AddGuildhouseScripts();
 #endif
 }
 
@@ -1216,6 +1220,13 @@ void AddCustomScripts()
     AddSC_DuelReset();
     AddSC_npc_lottery();
     AddSC_vip_commandscript();
+#endif
+}
+
+void AddGuildhouseScripts()
+{
+#ifdef SCRIPTS
     AddSC_npc_guildhouse_keeper();
+    AddSC_guildcity();
 #endif
 }
