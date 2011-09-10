@@ -1348,7 +1348,9 @@ class spell_frostwarden_handler_order_whelp : public SpellScriptLoader
 
                 std::list<Creature*>::iterator itr = unitList.begin();
                 std::advance(itr, urand(0, unitList.size()-1));
-                (*itr)->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
+                Unit* target = *itr;
+                if (target)
+                    target->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
             }
 
             void Register()
