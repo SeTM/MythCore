@@ -946,7 +946,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 if (SpellEntry const* pSpellInfo = sSpellStore.LookupEntry(pItemProto->Spells[i].SpellId))
                 {
                     if (pItemProto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE ||
-                        pItemProto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
+                        pItemProto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_STORE)
                     {
                         ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_SCRIPT_TARGET, pSpellInfo->Id);//script loading is done before item target loading
                         if (!conditions.empty())

@@ -2110,6 +2110,9 @@ class Player : public Unit, public GridObject<Player>
         void CastItemUseSpell(Item *item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex);
         void CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const* proto);
 
+        void ApplyItemOnStoreSpell(Item *item, bool apply);
+        void DestroyItemWithOnStoreSpell(Item* item);
+
         void SendEquipmentSetList();
         void SetEquipmentSet(uint32 index, EquipmentSet eqset);
         void DeleteEquipmentSet(uint64 setGuid);

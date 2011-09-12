@@ -81,6 +81,12 @@ void AuraApplication::_Remove()
     if (slot >= MAX_AURAS)
         return;
 
+    // remove at-store spell cast items (for all remove modes?)
+    if (m_target->GetTypeId() == TYPEID_PLAYER && m_removeMode != AURA_REMOVE_BY_DEFAULT)
+        if (uint64 castItemGuid = GetBase()->GetCastItemGUID())
+            if (Item* castItem = ((Player*)m_target)->GetItemByGuid(castItemGuid))
+                ((Player*)m_target)->DestroyItemWithOnStoreSpell(castItem);
+
     if (AuraApplication * foundAura = m_target->GetAuraApplication(GetBase()->GetId(), GetBase()->GetCasterGUID(), GetBase()->GetCastItemGUID()))
     {
         // Reuse visible aura slot by aura which is still applied - prevent storing dead pointers

@@ -6304,7 +6304,7 @@ SpellCastResult Spell::CheckItems()
                     ItemTemplate const *proto = targetItem->GetTemplate();
                     if (proto->Spells[e].SpellId && (
                         proto->Spells[e].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE ||
-                        proto->Spells[e].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE))
+                        proto->Spells[e].SpellTrigger == ITEM_SPELLTRIGGER_ON_STORE))
                     {
                         isItemUsable = true;
                         break;
