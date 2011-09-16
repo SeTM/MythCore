@@ -14,6 +14,7 @@
 // Custom
 void AddSC_DuelReset();
 void AddSC_npc_lottery();
+void AddSC_npc_bonuses();
 void AddSC_vip_commandscript();
 
 // spells
@@ -1214,6 +1215,7 @@ void AddCustomScripts()
     /* This is where custom scripts should be added. */
     AddSC_DuelReset();
     AddSC_npc_lottery();
+    AddSC_npc_bonuses();
     AddSC_vip_commandscript();
 #endif
 }
