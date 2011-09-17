@@ -12876,6 +12876,11 @@ Item* Player::GetItemByEntry(uint32 entry) const
             if (pItem->GetEntry() == entry)
                 return pItem;
 
+    for (uint8 i = KEYRING_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i)
+            if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                if (pItem->GetEntry() == entry)
+                    return pItem;
+
     return NULL;
 }
 
@@ -18753,6 +18758,16 @@ void Player::_SaveAuras(SQLTransaction& trans)
 
 void Player::_SaveInventory(SQLTransaction& trans)
 {
+    uint32 accid = this->GetSession()->GetAccountId();
+    int bonuses = 0;
+    int BONUS_TOKEN = 37711;
+    Item * i = GetItemByEntry(BONUS_TOKEN);
+    if (i != 0)
+    {
+        bonuses = i->GetCount();
+    }
+
+    CharacterDatabase.PQuery("UPDATE `bonus` SET `bonuses` = %u WHERE `account` = %u", bonuses, accid);
     // force items in buyback slots to new state
     // and remove those that aren't already
     for (uint8 i = BUYBACK_SLOT_START; i < BUYBACK_SLOT_END; ++i)

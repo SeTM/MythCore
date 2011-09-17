@@ -808,8 +808,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         return;
     }
 
-    pCurrChar->GetMotionMaster()->Initialize();
-
     SetPlayer(pCurrChar);
 
     pCurrChar->SendDungeonDifficulty(false);
@@ -1015,6 +1013,29 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     m_playerLoading = false;
 
     sScriptMgr->OnPlayerLogin(pCurrChar);
+
+    pCurrChar->GetMotionMaster()->Initialize();
+    int BONUS_TOKEN = 37711, bonuses = 0;
+    int accid = this->_accountId;
+    CharacterDatabase.PQuery("UPDATE bonus SET bonuses = bonuses + `add`, `add` = 0");
+    QueryResult result = CharacterDatabase.PQuery("SELECT `bonuses` FROM `bonus` WHERE `account` = %u", accid);
+    if(result)
+    {
+        Field *fields = result->Fetch();
+        bonuses = fields[0].GetUInt32();
+    }
+
+    Item * i = pCurrChar->GetItemByEntry(BONUS_TOKEN);
+    if (i != 0)
+    {
+        i->SetCount(bonuses);
+    }
+    else if (bonuses)
+    {
+        pCurrChar->AddItem(BONUS_TOKEN, bonuses);
+    }
+
+
     delete holder;
 }
 
