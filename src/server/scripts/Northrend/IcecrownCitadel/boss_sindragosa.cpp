@@ -196,6 +196,8 @@ class boss_sindragosa : public CreatureScript
                 events.ScheduleEvent(EVENT_UNCHAINED_MAGIC, urand(9000, 14000), EVENT_GROUP_LAND_PHASE);
                 events.ScheduleEvent(EVENT_ICY_GRIP, 33500, EVENT_GROUP_LAND_PHASE);
                 events.ScheduleEvent(EVENT_AIR_PHASE, 50000);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
                 mysticBuffetStack = 0;
                 isThirdPhase = false;
 
@@ -585,6 +587,7 @@ class npc_spinestalker : public CreatureScript
                 events.ScheduleEvent(EVENT_BELLOWING_ROAR, urand(20000, 25000));
                 events.ScheduleEvent(EVENT_CLEAVE_SPINESTALKER, urand(10000, 15000));
                 events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(8000, 12000));
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_DEFENSIVE);
 
                 if (instance->GetData(DATA_SPINESTALKER) != 255)
