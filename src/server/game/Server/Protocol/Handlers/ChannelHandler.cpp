@@ -46,7 +46,7 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
         {
             if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
             {
-                if (Channel *lfg = cMgr->GetJoinChannel(channel->pattern[_player->GetSession()->GetSessionDbcLocale()], channel->ChannelID))
+                if (Channel *lfg = cMgr->GetJoinChannel(channel->pattern[sWorld->GetDefaultDbcLocale()], channel->ChannelID))
                     lfg->Join(_player->GetGUID(), "");
             }
             return;
