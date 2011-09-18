@@ -18,51 +18,51 @@
 
 enum Texts
 {
-    SAY_AGGRO = 0,
-    SAY_VAMPIRIC_BITE = 1,
-    SAY_MIND_CONTROL = 2,
-    EMOTE_BLOODTHIRST = 3,
-    SAY_SWARMING_SHADOWS = 4,
-    EMOTE_SWARMING_SHADOWS = 5,
-    SAY_PACT_OF_THE_DARKFALLEN = 6,
-    SAY_AIR_PHASE = 7,
-    SAY_KILL = 8,
-    SAY_WIPE = 9,
-    SAY_BERSERK = 10,
-    SAY_DEATH = 11,
+    SAY_AGGRO                   = 0,
+    SAY_VAMPIRIC_BITE           = 1,
+    SAY_MIND_CONTROL            = 2,
+    EMOTE_BLOODTHIRST           = 3,
+    SAY_SWARMING_SHADOWS        = 4,
+    EMOTE_SWARMING_SHADOWS      = 5,
+    SAY_PACT_OF_THE_DARKFALLEN  = 6,
+    SAY_AIR_PHASE               = 7,
+    SAY_KILL                    = 8,
+    SAY_WIPE                    = 9,
+    SAY_BERSERK                 = 10,
+    SAY_DEATH                   = 11,
 };
 
 enum Spells
 {
-    SPELL_SHROUD_OF_SORROW = 70986,
-    SPELL_FRENZIED_BLOODTHIRST_VISUAL = 71949,
-    SPELL_VAMPIRIC_BITE = 71726,
-    SPELL_ESSENCE_OF_THE_BLOOD_QUEEN_PLR = 70879,
-    SPELL_FRENZIED_BLOODTHIRST = 70877,
-    SPELL_UNCONTROLLABLE_FRENZY = 70923,
-    SPELL_PRESENCE_OF_THE_DARKFALLEN = 71952,
-    SPELL_BLOOD_MIRROR_DAMAGE = 70821,
-    SPELL_BLOOD_MIRROR_VISUAL = 71510,
-    SPELL_BLOOD_MIRROR_DUMMY = 70838,
-    SPELL_DELIRIOUS_SLASH = 71623,
-    SPELL_PACT_OF_THE_DARKFALLEN_TARGET = 71336,
-    SPELL_PACT_OF_THE_DARKFALLEN = 71340,
-    SPELL_PACT_OF_THE_DARKFALLEN_DAMAGE = 71341,
-    SPELL_SWARMING_SHADOWS = 71264,
-    SPELL_TWILIGHT_BLOODBOLT_TARGET = 71445,
-    SPELL_TWILIGHT_BLOODBOLT = 71446,
-    SPELL_INCITE_TERROR = 73070,
-    SPELL_BLOODBOLT_WHIRL = 71772,
-    SPELL_ANNIHILATE = 71322,
+    SPELL_SHROUD_OF_SORROW                  = 70986,
+    SPELL_FRENZIED_BLOODTHIRST_VISUAL       = 71949,
+    SPELL_VAMPIRIC_BITE                     = 71726,
+    SPELL_ESSENCE_OF_THE_BLOOD_QUEEN_PLR    = 70879,
+    SPELL_FRENZIED_BLOODTHIRST              = 70877,
+    SPELL_UNCONTROLLABLE_FRENZY             = 70923,
+    SPELL_PRESENCE_OF_THE_DARKFALLEN        = 71952,
+    SPELL_BLOOD_MIRROR_DAMAGE               = 70821,
+    SPELL_BLOOD_MIRROR_VISUAL               = 71510,
+    SPELL_BLOOD_MIRROR_DUMMY                = 70838,
+    SPELL_DELIRIOUS_SLASH                   = 71623,
+    SPELL_PACT_OF_THE_DARKFALLEN_TARGET     = 71336,
+    SPELL_PACT_OF_THE_DARKFALLEN            = 71340,
+    SPELL_PACT_OF_THE_DARKFALLEN_DAMAGE     = 71341,
+    SPELL_SWARMING_SHADOWS                  = 71264,
+    SPELL_TWILIGHT_BLOODBOLT_TARGET         = 71445,
+    SPELL_TWILIGHT_BLOODBOLT                = 71446,
+    SPELL_INCITE_TERROR                     = 73070,
+    SPELL_BLOODBOLT_WHIRL                   = 71772,
+    SPELL_ANNIHILATE                        = 71322,
 };
 
 enum Shadowmourne
 {
-    QUEST_BLOOD_INFUSION = 24756,
-    ITEM_SHADOW_S_EDGE = 49888,
+    QUEST_BLOOD_INFUSION    = 24756,
+    ITEM_SHADOW_S_EDGE      = 49888,
 
-    SPELL_GUSHING_WOUND = 72132,
-    SPELL_THIRST_QUENCHED = 72154,
+    SPELL_GUSHING_WOUND     = 72132,
+    SPELL_THIRST_QUENCHED   = 72154,
 };
 
 uint32 const vampireAuras[3][MAX_DIFFICULTY] =
@@ -78,29 +78,29 @@ uint32 const vampireAuras[3][MAX_DIFFICULTY] =
 
 enum Events
 {
-    EVENT_BERSERK = 1,
-    EVENT_VAMPIRIC_BITE = 2,
-    EVENT_BLOOD_MIRROR = 3,
-    EVENT_DELIRIOUS_SLASH = 4,
-    EVENT_PACT_OF_THE_DARKFALLEN = 5,
-    EVENT_SWARMING_SHADOWS = 6,
-    EVENT_TWILIGHT_BLOODBOLT = 7,
-    EVENT_AIR_PHASE = 8,
-    EVENT_AIR_START_FLYING = 9,
-    EVENT_AIR_FLY_DOWN = 10,
+    EVENT_BERSERK                   = 1,
+    EVENT_VAMPIRIC_BITE             = 2,
+    EVENT_BLOOD_MIRROR              = 3,
+    EVENT_DELIRIOUS_SLASH           = 4,
+    EVENT_PACT_OF_THE_DARKFALLEN    = 5,
+    EVENT_SWARMING_SHADOWS          = 6,
+    EVENT_TWILIGHT_BLOODBOLT        = 7,
+    EVENT_AIR_PHASE                 = 8,
+    EVENT_AIR_START_FLYING          = 9,
+    EVENT_AIR_FLY_DOWN              = 10,
 
-    EVENT_GROUP_NORMAL = 1,
-    EVENT_GROUP_CANCELLABLE = 2,
+    EVENT_GROUP_NORMAL              = 1,
+    EVENT_GROUP_CANCELLABLE         = 2,
 };
 
 #define GUID_VAMPIRE 1
 
 enum Points
 {
-    POINT_CENTER = 1,
-    POINT_AIR = 2,
-    POINT_GROUND = 3,
-    POINT_MINCHAR = 4,
+    POINT_CENTER    = 1,
+    POINT_AIR       = 2,
+    POINT_GROUND    = 3,
+    POINT_MINCHAR   = 4,
 };
 
 Position const centerPos = {4595.7090f, 2769.4190f, 400.6368f, 0.000000f};
@@ -142,6 +142,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                 _offtank = NULL;
                 _vampires.clear();
                 _creditBloodQuickening = false;
+                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
             }
 
             void EnterCombat(Unit* who)
@@ -152,6 +153,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                     instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
                     return;
                 }
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
 
                 me->setActive(true);
                 DoZoneInCombat();
@@ -282,7 +284,10 @@ class boss_blood_queen_lana_thel : public CreatureScript
                         events.ScheduleEvent(EVENT_BLOOD_MIRROR, 2500, EVENT_GROUP_CANCELLABLE);
                         break;
                     case POINT_MINCHAR:
-                        DoCast(me, SPELL_ANNIHILATE, true);
+                        //DoCast(me, SPELL_ANNIHILATE, true);
+                        if (Creature* minchar = me->FindNearestCreature(NPC_INFILTRATOR_MINCHAR_BQ, 200.0f))
+                            me->DealDamage(minchar,minchar->GetHealth());
+
                         // already in evade mode
                         me->GetMotionMaster()->MoveTargetedHome();
                         Reset();
@@ -388,7 +393,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                             Trinity::RandomResizeList<Player*>(targets, uint32(Is25ManRaid() ? 4 : 2));
                             for (std::list<Player*>::iterator itr = targets.begin(); itr != targets.end(); ++itr)
                                 DoCast(*itr, SPELL_TWILIGHT_BLOODBOLT);
-                            DoCast(me, SPELL_TWILIGHT_BLOODBOLT_TARGET);
+                            //DoCast(me, SPELL_TWILIGHT_BLOODBOLT_TARGET);
                             events.ScheduleEvent(EVENT_TWILIGHT_BLOODBOLT, urand(10000, 15000), EVENT_GROUP_NORMAL);
                             break;
                         }
@@ -827,7 +832,7 @@ void AddSC_boss_blood_queen_lana_thel()
     new boss_blood_queen_lana_thel();
     new spell_blood_queen_vampiric_bite();
     new spell_blood_queen_frenzied_bloodthirst();
-    new spell_blood_queen_bloodbolt();
+    //new spell_blood_queen_bloodbolt(); -- in core
     new spell_blood_queen_pact_of_the_darkfallen();
     new spell_blood_queen_pact_of_the_darkfallen_dmg();
     new spell_blood_queen_pact_of_the_darkfallen_dmg_target();
