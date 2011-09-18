@@ -1901,7 +1901,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, SpellNo
     }
 
     Trinity::SpellNotifierCreatureAndPlayer notifier(m_caster, TagUnitMap, radius, type, TargetType, pos, entry, m_spellInfo);
-    if ((m_spellInfo->AttributesEx3 & SPELL_ATTR3_PLAYERS_ONLY) || (TargetType == SPELL_TARGETS_ENTRY && !entry))
+    if ((m_spellInfo->AttributesEx3 & SPELL_ATTR3_PLAYERS_ONLY_AND_IGNORE_LOS) || (TargetType == SPELL_TARGETS_ENTRY && !entry))
         m_caster->GetMap()->VisitWorld(pos->m_positionX, pos->m_positionY, radius, notifier);
     else
         m_caster->GetMap()->VisitAll(pos->m_positionX, pos->m_positionY, radius, notifier);
@@ -4881,7 +4881,8 @@ SpellCastResult Spell::CheckCast(bool strict)
                 }
             }
 
-            if (!m_IsTriggeredSpell && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !(m_customAttr & SPELL_ATTR0_CU_IGNORE_LOS) && !m_caster->IsWithinLOSInMap(target))
+            if (!m_IsTriggeredSpell && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !(m_customAttr & SPELL_ATTR0_CU_IGNORE_LOS)
+                && !m_caster->IsWithinLOSInMap(target) && !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_PLAYERS_ONLY_AND_IGNORE_LOS))
                 return SPELL_FAILED_LINE_OF_SIGHT;
 
         }
@@ -6303,7 +6304,7 @@ SpellCastResult Spell::CheckItems()
                     ItemTemplate const *proto = targetItem->GetTemplate();
                     if (proto->Spells[e].SpellId && (
                         proto->Spells[e].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE ||
-                        proto->Spells[e].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE))
+                        proto->Spells[e].SpellTrigger == ITEM_SPELLTRIGGER_ON_STORE))
                     {
                         isItemUsable = true;
                         break;

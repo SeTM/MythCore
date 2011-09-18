@@ -81,6 +81,12 @@ void AuraApplication::_Remove()
     if (slot >= MAX_AURAS)
         return;
 
+    /*// remove at-store spell cast items (for all remove modes?)
+    if (m_target->GetTypeId() == TYPEID_PLAYER && m_removeMode != AURA_REMOVE_BY_DEFAULT)
+        if (uint64 castItemGuid = GetBase()->GetCastItemGUID())
+            if (Item* castItem = ((Player*)m_target)->GetItemByGuid(castItemGuid))
+                ((Player*)m_target)->DestroyItemWithOnStoreSpell(castItem);*/
+
     if (AuraApplication * foundAura = m_target->GetAuraApplication(GetBase()->GetId(), GetBase()->GetCasterGUID(), GetBase()->GetCastItemGUID()))
     {
         // Reuse visible aura slot by aura which is still applied - prevent storing dead pointers
@@ -1687,6 +1693,33 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     }
                     break;
             }
+
+            if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
+            {
+                if (GetCasterGUID() == target->GetGUID())
+                {
+                    if (apply)
+                    {
+                        // Sanctified Retribution
+                        if (!(GetSpellProto()->SpellFamilyFlags[0] & 0x00000008))
+                            target->CastSpell(target, 63531, true);
+                        // Improved Devotion Aura
+                        target->CastSpell(target, 63514, true);
+                        // Improved Concentration Aura
+                        target->CastSpell(target, 63510, true);
+
+                    }
+                    else
+                    {
+                        if (!(GetSpellProto()->SpellFamilyFlags[0] & 0x00000008))
+                            target->RemoveAurasDueToSpell(63531);
+                        // Improved Devotion Aura
+                        target->RemoveAurasDueToSpell(63514);
+                        // Improved Concentration Aura
+                        target->RemoveAurasDueToSpell(63510);
+                    }
+                }
+            }
             break;
         case SPELLFAMILY_DEATHKNIGHT:
             if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_PRESENCE)
@@ -1777,32 +1810,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                             target->RemoveAurasDueToSpell(65095);
                         }
                         target->RemoveAurasDueToSpell(49772);
-                    }
-                }
-            }
-            if (GetSpellSpecific(GetSpellProto()) == SPELL_SPECIFIC_AURA)
-            {
-                if (GetCasterGUID() == target->GetGUID())
-                {     // Sanctified Retribution
-                    if (target->HasAura(31869))
-                    {
-                        target->RemoveAurasDueToSpell(63531);
-                        if (apply)
-                            target->CastSpell(target, 63531, true);
-                    }
-                    // Improved Devotion Aura
-                    if (target->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_PALADIN, 291, 1))
-                    {
-                        target->RemoveAurasDueToSpell(63514);
-                        if (apply)
-                            target->CastSpell(target, 63514, true);
-                    }
-                    // Improved Concentration Aura
-                    if (target->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_PALADIN, 1487, 0))
-                    {
-                        target->RemoveAurasDueToSpell(63510);
-                        if (apply)
-                            target->CastSpell(target, 63510, true);
                     }
                 }
             }

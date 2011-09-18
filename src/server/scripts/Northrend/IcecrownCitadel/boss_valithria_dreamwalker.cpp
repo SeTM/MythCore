@@ -26,31 +26,31 @@ enum Yells
 
 enum Spells
 {
-    SPELL_FEIGN_DEATH                   = 71598,
-    SPELL_CORRUPTION    = 70904,
-    SPELL_DREAM_SLIP    = 71196,
-    SPELL_RAGE          = 71189,
-    SPELL_COLUMN_PRE    = 70704,
-    SPELL_COLUMN_EFFECT_10N = 70702,
-    SPELL_COLUMN_EFFECT_10H_25N = 71746,
-    SPELL_COLUMN_EFFECT_25H = 72020,
+    SPELL_FEIGN_DEATH               = 71598,
+    SPELL_CORRUPTION                = 70904,
+    SPELL_DREAM_SLIP                = 71196,
+    SPELL_RAGE                      = 71189,
+    SPELL_COLUMN_PRE                = 70704,
+    SPELL_COLUMN_EFFECT_10N         = 70702,
+    SPELL_COLUMN_EFFECT_10H_25N     = 71746,
+    SPELL_COLUMN_EFFECT_25H         = 72020,
 
-    SPELL_SUMMON_ROT_WORMS_AURA = 70675,
-    SPELL_SUMMON_ROT_WORM_VISUAL = 70668,
+    SPELL_SUMMON_ROT_WORMS_AURA     = 70675,
+    SPELL_SUMMON_ROT_WORM_VISUAL    = 70668,
 
-    SPELL_DREAM_STATE   = 70766,
-    SPELL_VIGOR         = 70873,
-    SPELL_TWISTED_NIGHTMARES = 71941,
-    SPELL_CLOUD_VISUAL  = 70876,
-    SPELL_PORTAL_N_PRE  = 71301,
-    SPELL_PORTAL_N_NPC  = 71305,
-    SPELL_PORTAL_H_PRE  = 71977,
-    SPELL_PORTAL_H_NPC  = 71987,
-    SPELL_SUMMON_PORTAL_TO_DREAM = 72482,
+    SPELL_DREAM_STATE               = 70766,
+    SPELL_VIGOR                     = 70873,
+    SPELL_TWISTED_NIGHTMARES        = 71941,
+    SPELL_CLOUD_VISUAL              = 70876,
+    SPELL_PORTAL_N_PRE              = 71301,
+    SPELL_PORTAL_N_NPC              = 71305,
+    SPELL_PORTAL_H_PRE              = 71977,
+    SPELL_PORTAL_H_NPC              = 71987,
+    SPELL_SUMMON_PORTAL_TO_DREAM    = 72482,
 
-    SPELL_DREAM_PORTAL_VISUAL = 70763,
-    SPELL_NIGHTMARE_PORTAL_VISUAL = 71994,
-    SPELL_DREAM_PORTAL_PRE_VISUAL = 71304,
+    SPELL_DREAM_PORTAL_VISUAL       = 70763,
+    SPELL_NIGHTMARE_PORTAL_VISUAL   = 71994,
+    SPELL_DREAM_PORTAL_PRE_VISUAL   = 71304,
     SPELL_NIGHTMARE_PORTAL_PRE_VISUAL = 71986,
 
     SPELL_COPY_DAMAGE                   = 71948,
@@ -345,6 +345,7 @@ class boss_valithria : public CreatureScript
                 if (!bEnd && HealthAbovePct(99))
                 {
                     DoScriptText(SAY_END, me);
+                    Cleanup(me, instance, 100.0f);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
                     me->SetReactState(REACT_PASSIVE);
                     DoCast(me, SPELL_CANCEL_ALL_AURAS);

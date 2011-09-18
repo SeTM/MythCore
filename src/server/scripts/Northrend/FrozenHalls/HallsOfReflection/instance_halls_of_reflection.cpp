@@ -92,13 +92,14 @@ public:
 
         void OnCreatureCreate(Creature* creature)
         {
-                            if (!_teamInInstance)
-        {
-            Map::PlayerList const &players = instance->GetPlayers();
-            if (!players.isEmpty())
-                        if (Player* player = players.begin()->getSource())
-                            _teamInInstance = player->GetTeam();
+            if (!_teamInInstance)
+            {
+                Map::PlayerList const &players = instance->GetPlayers();
+                if (!players.isEmpty())
+                    if (Player* player = players.begin()->getSource())
+                        _teamInInstance = player->GetTeam();
             }
+
             switch(creature->GetEntry())
             {
                 case NPC_FALRIC:

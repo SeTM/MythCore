@@ -365,6 +365,12 @@ void Spell::SpellDamageSchoolDmg(SpellEffIndex effIndex)
                     case 28865:
                         damage = (((InstanceMap*)m_caster->GetMap())->GetDifficulty() == REGULAR_DIFFICULTY ? 2750 : 4250);
                         break;
+                    case 51673:                             // Rocket Blast
+                    {
+                        float distance = m_caster->GetDistance2d(unitTarget);
+                        damage *= exp(-distance/15.0f);
+                        break;
+                    }
                     // percent from health with min
                     case 25599:                             // Thundercrash
                     {
@@ -5290,6 +5296,81 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     if(unitTarget->HasAura(66482))
                         unitTarget->RemoveAuraFromStack(66482);
                     break;
+                case 70117:                                 // Ice grip (Sindragosa pull effect)
+                {
+                    if (!unitTarget)
+                        return;
+                    float fPosX, fPosY, fPosZ;
+                    Position pos;
+                    m_caster->GetPosition(&pos);
+                    m_caster->GetRandomPoint(pos, m_caster->GetObjectSize(), fPosX, fPosY, fPosZ);
+                    unitTarget->NearTeleportTo(fPosX, fPosY, fPosZ+1.0f, -unitTarget->GetOrientation(), false);
+                    return;
+                }
+                case 71446:                                 // Twilight Bloodbolt 10N
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 71447, true);
+                    return;
+                }
+                case 71478:                                 // Twilight Bloodbolt 25N
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 71481, true);
+                    return;
+                }
+                case 71479:                                 // Twilight Bloodbolt 10H
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 71482, true);
+                    return;
+                }
+                case 71480:                                 // Twilight Bloodbolt 25H
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 71483, true);
+                    return;
+                }
+                case 71899:                                 // Bloodbolt Whirl 10N
+                {
+                    if (!unitTarget)
+                        return;
+
+                    m_caster->CastSpell(unitTarget, 71446, true);
+                    return;
+                }
+                case 71900:                                 // Bloodbolt Whirl 25N
+                {
+                    if (!unitTarget)
+                        return;
+
+                    m_caster->CastSpell(unitTarget, 71478, true);
+                    return;
+                }
+                case 71901:                                 // Bloodbolt Whirl 10H
+                {
+                    if (!unitTarget)
+                        return;
+
+                    m_caster->CastSpell(unitTarget, 71479, true);
+                    return;
+                }
+                case 71902:                                 // Bloodbolt Whirl 25H
+                {
+                    if (!unitTarget)
+                        return;
+
+                    m_caster->CastSpell(unitTarget, 71480, true);
+                    return;
+                }
             }
             break;
         }

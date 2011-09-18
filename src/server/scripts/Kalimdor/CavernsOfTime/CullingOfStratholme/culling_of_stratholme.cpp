@@ -328,6 +328,7 @@ public:
         npc_arthasAI(Creature *pCreature) : npc_escortAI(pCreature)
         {
             pInstance = pCreature->GetInstanceScript();
+            me->setActive(true);
             Reset();
         }
 
@@ -375,7 +376,8 @@ public:
             uiMalganisGUID = 0;
             uiInfiniteGUID = 0;
 
-            if (pInstance) {
+            if (pInstance) 
+            {
                 pInstance->SetData(DATA_ARTHAS_EVENT, NOT_STARTED);
                 switch(pInstance->GetData(DATA_ARTHAS_EVENT))
                 {
@@ -999,7 +1001,7 @@ public:
                             {
                                 pDisguised2->UpdateEntry(NPC_INFINITE_HUNTER, 0);
                                 //Make them unattackable
-                                pDisguised2->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                //pDisguised2->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
                                 pDisguised2->SetReactState(REACT_PASSIVE);
                             }
                             JumpToNextStep(2000);
@@ -1009,7 +1011,7 @@ public:
                             {
                                 pDisguised1->UpdateEntry(NPC_INFINITE_AGENT, 0);
                                 //Make them unattackable
-                                pDisguised1->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                //pDisguised1->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
                                 pDisguised1->SetReactState(REACT_PASSIVE);
                             }
                             JumpToNextStep(2000);
@@ -1019,7 +1021,7 @@ public:
                             {
                                 pDisguised0->UpdateEntry(NPC_INFINITE_ADVERSARY, 0);
                                 //Make them unattackable
-                                pDisguised0->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
+                                //pDisguised0->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE);
                                 pDisguised0->SetReactState(REACT_PASSIVE);
                             }
                             JumpToNextStep(2000);
@@ -1120,6 +1122,7 @@ public:
                         case 84:
                             DoScriptText(SAY_PHASE404, me);
                             SetHoldState(false);
+                            SetDespawnAtFar(false);
                             bStepping = false;
                             break;
                         //After Gossip 5

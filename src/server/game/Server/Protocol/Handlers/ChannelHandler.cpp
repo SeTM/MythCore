@@ -41,6 +41,16 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
 
         if (!_player->CanJoinConstantChannelInZone(channel, current_zone))
             return;
+
+        if (channel->flags & CHANNEL_DBC_FLAG_LFG)
+        {
+            if (ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
+            {
+                if (Channel *lfg = cMgr->GetJoinChannel(channel->pattern[sWorld->GetDefaultDbcLocale()], channel->ChannelID))
+                    lfg->Join(_player->GetGUID(), "");
+            }
+            return;
+        }
     }
 
     recvPacket >> unknown1 >> unknown2;

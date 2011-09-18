@@ -379,12 +379,6 @@ class npc_precious_icc : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if(_instance && _instance->GetBossState(DATA_ROTFACE) != IN_PROGRESS)
-                {
-                    me->DisappearAndDie();
-                    return;
-                }
-
                 if (!UpdateVictim())
                     return;
 

@@ -99,6 +99,8 @@ public:
 
             pCreature->setFaction(250);
             pCreature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+            pCreature->SetSpeed(MOVE_RUN, 1.5f);
+            pCreature->SetSpeed(MOVE_WALK, 1.5f);
 
             CAST_AI(npc_escortAI, (pCreature->AI()))->Start(false, false, pPlayer->GetGUID());
             CAST_AI(npc_escortAI, (pCreature->AI()))->SetDespawnAtFar(false);

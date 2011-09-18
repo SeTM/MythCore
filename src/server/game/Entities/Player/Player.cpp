@@ -2734,6 +2734,7 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
                 // gameobjects like guildbanks and mailboxes - 10.0 is a just an abitrary choosen number
                 case GAMEOBJECT_TYPE_GUILD_BANK:
                 case GAMEOBJECT_TYPE_MAILBOX:
+                case GAMEOBJECT_TYPE_QUESTGIVER:
                     maxdist = 10.0f;
                     break;
                 case GAMEOBJECT_TYPE_FISHINGHOLE:
@@ -8170,23 +8171,27 @@ void Player::_ApplyWeaponDependentAuraDamageMod(Item *item, WeaponAttackType att
     UnitMods unitMod = UNIT_MOD_END;
     switch (attackType)
     {
-        case BASE_ATTACK:   unitMod = UNIT_MOD_DAMAGE_MAINHAND; break;
-        case OFF_ATTACK:    unitMod = UNIT_MOD_DAMAGE_OFFHAND;  break;
-        case RANGED_ATTACK: unitMod = UNIT_MOD_DAMAGE_RANGED;   break;
-        default: return;
+    case BASE_ATTACK:   unitMod = UNIT_MOD_DAMAGE_MAINHAND; break;
+    case OFF_ATTACK:    unitMod = UNIT_MOD_DAMAGE_OFFHAND;  break;
+    case RANGED_ATTACK: unitMod = UNIT_MOD_DAMAGE_RANGED;   break;
+    default: return;
     }
 
     UnitModifierType unitModType = TOTAL_VALUE;
     switch (aura->GetAuraType())
     {
-        case SPELL_AURA_MOD_DAMAGE_DONE:         unitModType = TOTAL_VALUE; break;
-        default: return;
+    case SPELL_AURA_MOD_DAMAGE_DONE:         unitModType = TOTAL_VALUE; break;
+    case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE: unitModType = TOTAL_PCT;   break;
+    default: return;
     }
 
     if (item->IsFitToSpellRequirements(aura->GetSpellProto()))
     {
         HandleStatModifier(unitMod, unitModType, float(aura->GetAmount()), apply);
-        ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS, aura->GetAmount(), apply);
+        if (unitModType == TOTAL_VALUE)
+            ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS, aura->GetAmount(), apply);
+        else
+            ApplyPercentModFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, float (aura->GetAmount()), apply);
     }
 }
 
@@ -8285,6 +8290,78 @@ void Player::UpdateEquipSpellsAtFormChange()
         }
     }
 }
+
+/**
+ * (un-)Apply item spells triggered at adding item to inventory ITEM_SPELLTRIGGER_ON_STORE
+ *
+ * @param item  added/removed item to/from inventory
+ * @param apply (un-)apply spell affects.
+ *
+ * Note: item moved from slot to slot in 2 steps RemoveItem and StoreItem/EquipItem
+ * In result function not called in RemoveItem for prevent unexpected re-apply auras from related spells
+ * with duration reset and etc. Instead unapply done in StoreItem/EquipItem and in specialized
+ * functions for item final remove/destroy from inventory. If new RemoveItem calls added need be sure that
+ * function will call after it in some way if need.
+ */
+
+void Player::ApplyItemOnStoreSpell(Item *item, bool apply)
+{
+    if (!item)
+        return;
+
+    const ItemTemplate *proto = item->GetTemplate();
+    if (!proto)
+        return;
+
+    for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+    {
+        _Spell const& spellData = proto->Spells[i];
+
+        // no spell
+        if (!spellData.SpellId)
+            continue;
+
+        // apply/unapply only at-store spells
+        if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_STORE)
+            continue;
+
+        if (apply)
+        {
+            // can be attempt re-applied at move in inventory slots
+            if (!HasAura(spellData.SpellId))
+                CastSpell(this, spellData.SpellId, true, item);
+        }
+        else
+            RemoveAurasDueToItemSpell(item, spellData.SpellId);
+    }
+}
+
+void Player::DestroyItemWithOnStoreSpell(Item* item)
+{
+    if (!item)
+        return;
+
+    const ItemTemplate *proto = item->GetTemplate();
+    if (!proto)
+        return;
+
+    for (int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+    {
+        _Spell const& spellData = proto->Spells[i];
+
+        // no spell
+        if (!spellData.SpellId)
+            continue;
+
+        // apply/unapply only at-store spells
+        if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_STORE)
+            continue;
+
+        DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+        break;
+    }
+}
+
 void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 procVictim, uint32 procEx)
 {
     if (!target || !target->isAlive() || target == this)
@@ -12032,10 +12109,10 @@ Item* Player::StoreNewItem(ItemPosCountVec const& dest, uint32 item, bool update
             pItem->SetItemRandomProperties(randomPropertyId);
         pItem = StoreItem(dest, pItem, update);
 
-        const ItemTemplate *proto = pItem->GetTemplate();
+        /*const ItemTemplate *proto = pItem->GetTemplate();
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
             if (proto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE && proto->Spells[i].SpellId > 0) // On obtain trigger
-                CastSpell(this, proto->Spells[i].SpellId, true, pItem);
+                CastSpell(this, proto->Spells[i].SpellId, true, pItem);*/
 
         if (allowedLooters && pItem->GetTemplate()->GetMaxStackSize() == 1 && pItem->IsSoulBound())
         {
@@ -12142,6 +12219,9 @@ Item* Player::_StoreItem(uint16 pos, Item *pItem, uint32 count, bool clone, bool
         AddEnchantmentDurations(pItem);
         AddItemDurations(pItem);
 
+        // at place into not appropriate slot (bank, for example) remove aura
+        ApplyItemOnStoreSpell(pItem, IsEquipmentPos(pItem->GetBagSlot(), pItem->GetSlot()) || IsInventoryPos(pItem->GetBagSlot(), pItem->GetSlot()));
+
         return pItem;
     }
     else
@@ -12217,6 +12297,8 @@ Item* Player::EquipItem(uint16 pos, Item *pItem, bool update)
                 AddItemsSetItem(this, pItem);
 
             _ApplyItemMods(pItem, slot, true);
+
+            ApplyItemOnStoreSpell(pItem, true);
 
             if (pProto && isInCombat() && (pProto->Class == ITEM_CLASS_WEAPON || pProto->InventoryType == INVTYPE_RELIC) && m_weaponChangeTimer == 0)
             {
@@ -12313,6 +12395,7 @@ void Player::QuickEquipItem(uint16 pos, Item *pItem)
     {
         AddEnchantmentDurations(pItem);
         AddItemDurations(pItem);
+        ApplyItemOnStoreSpell(pItem, true);
 
         uint8 slot = pos & 255;
         VisualizeItem(slot, pItem);
@@ -12456,6 +12539,11 @@ void Player::MoveItemFromInventory(uint8 bag, uint8 slot, bool update)
         ItemRemovedQuestCheck(it->GetEntry(), it->GetCount());
         RemoveItem(bag, slot, update);
         it->SetNotRefundable(this, false);
+
+        // item atStore spell not removed in RemoveItem (for avoid reappaly in slots changes), so do it directly
+        if (IsEquipmentPos(bag, slot) || IsInventoryPos(bag, slot))
+            ApplyItemOnStoreSpell(it, false);
+
         it->RemoveFromUpdateQueueOf(this);
         if (it->IsInWorld())
         {
@@ -12513,10 +12601,13 @@ void Player::DestroyItem(uint8 bag, uint8 slot, bool update)
         pItem->SetSoulboundTradeable(NULL, this, false);
         RemoveTradeableItem(pItem);
 
-        const ItemTemplate *proto = pItem->GetTemplate();
+        if (IsEquipmentPos(bag, slot) || IsInventoryPos(bag, slot))
+            ApplyItemOnStoreSpell(pItem, false);
+
+        /*const ItemTemplate *proto = pItem->GetTemplate();
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
             if (proto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_NO_DELAY_USE && proto->Spells[i].SpellId > 0) // On obtain trigger
-                RemoveAurasDueToSpell(proto->Spells[i].SpellId);
+                RemoveAurasDueToSpell(proto->Spells[i].SpellId);*/
 
         ItemRemovedQuestCheck(pItem->GetEntry(), pItem->GetCount());
 
@@ -12784,6 +12875,11 @@ Item* Player::GetItemByEntry(uint32 entry) const
         if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
             if (pItem->GetEntry() == entry)
                 return pItem;
+
+    for (uint8 i = KEYRING_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i)
+            if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+                if (pItem->GetEntry() == entry)
+                    return pItem;
 
     return NULL;
 }
@@ -14328,21 +14424,22 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
     {
         case GOSSIP_OPTION_GOSSIP:
         {
-            if (menuItemData->GossipActionMenuId)
-            {
-                PrepareGossipMenu(source, menuItemData->GossipActionMenuId);
-                SendPreparedGossip(source);
-            }
-
             if (menuItemData->GossipActionPoi)
                 PlayerTalkClass->SendPointOfInterest(menuItemData->GossipActionPoi);
 
+            // need before call PrepareGossipMenu
             if (menuItemData->GossipActionScript)
             {
                 if (source->GetTypeId() == TYPEID_UNIT)
                     GetMap()->ScriptsStart(sGossipScripts, menuItemData->GossipActionScript, this, source);
                 else if (source->GetTypeId() == TYPEID_GAMEOBJECT)
                     GetMap()->ScriptsStart(sGossipScripts, menuItemData->GossipActionScript, source, this);
+            }
+
+            if (menuItemData->GossipActionMenuId)
+            {
+                PrepareGossipMenu(source, menuItemData->GossipActionMenuId);
+                SendPreparedGossip(source);
             }
             break;
         }
@@ -15048,12 +15145,13 @@ void Player::RewardQuest(Quest const *pQuest, uint32 reward, Object* questGiver,
     if (log_slot < MAX_QUEST_LOG_SIZE)
         SetQuestSlot(log_slot, 0);
 
-    RewardedQuestSet::const_iterator rewItr = m_RewardedQuests.find(quest_id);
-    bool rewarded = (rewItr != m_RewardedQuests.end());
+    /*RewardedQuestSet::const_iterator rewItr = m_RewardedQuests.find(quest_id);
+    bool rewarded = (rewItr != m_RewardedQuests.end());*/
 
     // Not give XP in case already completed once repeatable quest
     //uint32 XP = rewarded ? 0 : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
-    uint32 XP = rewarded ? 0 : (GetSession()->IsPremium() != 0 ? uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_PREMIUM_QUEST)) : uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_QUEST)));
+    //uint32 XP = rewarded ? 0 : (GetSession()->IsPremium() != 0 ? uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_PREMIUM_QUEST)) : uint32(pQuest->XPValue( this )*sWorld->getRate(RATE_XP_QUEST)));
+    uint32 XP = GetSession()->IsPremium() != 0 ? uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_PREMIUM_QUEST)) : uint32(pQuest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -17445,7 +17543,7 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
                         ItemPosCountVec dest;
                         err = CanStoreItem(itr->second->GetSlot(), slot, dest, item);
                         if (err == EQUIP_ERR_OK)
-                            itr->second->StoreItem(slot, item, true);
+                            StoreItem(dest, item, true);
                     }
                 }
 
@@ -18660,6 +18758,16 @@ void Player::_SaveAuras(SQLTransaction& trans)
 
 void Player::_SaveInventory(SQLTransaction& trans)
 {
+    uint32 accid = this->GetSession()->GetAccountId();
+    int bonuses = 0;
+    int BONUS_TOKEN = 37711;
+    Item * i = GetItemByEntry(BONUS_TOKEN);
+    if (i != 0)
+    {
+        bonuses = i->GetCount();
+    }
+
+    CharacterDatabase.PQuery("UPDATE `bonus` SET `bonuses` = %u WHERE `account` = %u", bonuses, accid);
     // force items in buyback slots to new state
     // and remove those that aren't already
     for (uint8 i = BUYBACK_SLOT_START; i < BUYBACK_SLOT_END; ++i)

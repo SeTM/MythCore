@@ -1,13 +1,24 @@
 /*
- * Copyright (C) 2008 - 2011 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2010 - 2011 Myth Project <http://bitbucket.org/sun/myth-core/>
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * Myth Project's source is based on the Trinity Project source, you can find the
- * link to that easily in Trinity Copyrights. Myth Project is a private community.
- * To get access, you either have to donate or pass a developer test.
- * You can't share Myth Project's sources! Only for personal use.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+/// \addtogroup Trinityd
+/// @{
+/// \file
 
 #ifndef _RASOCKET_H
 #define _RASOCKET_H
@@ -35,6 +46,7 @@ class RASocket: public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
         int recv_line(ACE_Message_Block& buffer);
         int process_command(const std::string& command);
         int authenticate();
+        int subnegotiate();     //! Used by telnet protocol RFC 854 / 855
         int check_access_level(const std::string& user);
         int check_password(const std::string& user, const std::string& pass);
         int send(const std::string& line);
@@ -47,3 +59,4 @@ class RASocket: public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
         uint8 iMinLevel;
 };
 #endif
+/// @}

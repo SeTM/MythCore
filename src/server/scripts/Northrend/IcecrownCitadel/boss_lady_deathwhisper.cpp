@@ -274,7 +274,7 @@ class boss_lady_deathwhisper : public CreatureScript
                 events.SetPhase(PHASE_ONE);
                 // phase-independent events
                 events.ScheduleEvent(EVENT_BERSERK, 600000);
-                events.ScheduleEvent(EVENT_DEATH_AND_DECAY, 10000);
+                events.ScheduleEvent(EVENT_DEATH_AND_DECAY, 30000);
                 // phase one only
                 events.ScheduleEvent(EVENT_P1_SUMMON_WAVE, 5000, 0, PHASE_ONE);
                 events.ScheduleEvent(EVENT_P1_SHADOW_BOLT, urand(5500, 6000), 0, PHASE_ONE);
@@ -437,7 +437,7 @@ class boss_lady_deathwhisper : public CreatureScript
                         case EVENT_DEATH_AND_DECAY:
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                                 DoCast(target, SPELL_DEATH_AND_DECAY);
-                            events.ScheduleEvent(EVENT_DEATH_AND_DECAY, urand(10000, 12000));
+                            events.ScheduleEvent(EVENT_DEATH_AND_DECAY, urand(25000, 30000));
                             break;
                         case EVENT_DOMINATE_MIND_H:
                             Talk(SAY_DOMINATE_MIND);

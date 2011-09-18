@@ -1,12 +1,22 @@
 /*
- * Copyright (C) 2008 - 2011 Trinity <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
- * Copyright (C) 2010 - 2011 Myth Project <http://bitbucket.org/sun/myth-core/>
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * Myth Project's source is based on the Trinity Project source, you can find the
- * link to that easily in Trinity Copyrights. Myth Project is a private community.
- * To get access, you either have to donate or pass a developer test.
- * You can't share Myth Project's sources! Only for personal use.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/** \file
+    \ingroup Trinityd
  */
 
 #include "Common.h"
@@ -63,11 +73,11 @@ void RARunnable::run()
 
     if (acceptor.open(listen_addr, m_Reactor) == -1)
     {
-        sLog->outError("Myth RA can not bind to port %d on %s", raport, stringip.c_str());
+        sLog->outError("Trinity RA can not bind to port %d on %s", raport, stringip.c_str());
         return;
     }
 
-    sLog->outString("Starting Myth RA on port %d on %s", raport, stringip.c_str());
+    sLog->outString("Starting Trinity RA on port %d on %s", raport, stringip.c_str());
 
     while (!World::IsStopped())
     {
@@ -79,5 +89,5 @@ void RARunnable::run()
             break;
     }
 
-    sLog->outStaticDebug("Myth RA thread exiting");
+    sLog->outStaticDebug("Trinity RA thread exiting");
 }

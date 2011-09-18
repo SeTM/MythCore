@@ -18,7 +18,7 @@
 #include "ScriptPCH.h"
 #include "culling_of_stratholme.h"
 
-#define MAX_ENCOUNTER 5
+#define MAX_ENCOUNTER 6
 
 /* Culling of Stratholme encounters:
 0 - Meathook
@@ -63,6 +63,9 @@ class instance_culling_of_stratholme : public InstanceMapScript
                 _genericBunnyGUID = 0;
                 memset(&_encounterState[0], 0, sizeof(uint32) * MAX_ENCOUNTER);
                 _crateCount = 0;
+                m_uiHeroicTimer = 1500000;
+                m_uiLastTimer = 1500000;
+                bonus = true;
             }
 
             bool IsEncounterInProgress() const
@@ -171,6 +174,16 @@ class instance_culling_of_stratholme : public InstanceMapScript
                         break;
                     case DATA_INFINITE_EVENT:
                         _encounterState[4] = data;
+                        break;
+                    case DATA_ARTHAS_EVENT:
+                        _encounterState[5] = data;
+                        if(data == IN_PROGRESS)
+                        {
+                            if(Creature* Corruptor = instance->GetCreature(_infiniteGUID))
+                                Corruptor->SetPhaseMask(1, true);
+                            DoUpdateWorldState(WORLDSTATE_TIME_GUARDIAN_SHOW, 1);
+                            DoUpdateWorldState(WORLDSTATE_TIME_GUARDIAN, 25);  
+                        } 
                         break;
                     case DATA_CRATE_COUNT:
                         _crateCount = data;
@@ -290,6 +303,34 @@ class instance_culling_of_stratholme : public InstanceMapScript
                 OUT_LOAD_INST_DATA_COMPLETE;
             }
 
+            void Update(uint32 uiDiff)
+            {
+                if(_encounterState[5] == IN_PROGRESS)
+                {
+                    if (!bonus)
+                        return;
+
+                    if(m_uiHeroicTimer < uiDiff)
+                    {
+                        bonus = false;
+                        DoUpdateWorldState(WORLDSTATE_TIME_GUARDIAN_SHOW, 0);
+                        if(Creature* Corruptor = instance->GetCreature(_infiniteGUID))
+                            if (Corruptor->isAlive())
+                                Corruptor->SetPhaseMask(0, true);
+
+                    }else m_uiHeroicTimer -= uiDiff;
+
+                    if(m_uiHeroicTimer < m_uiLastTimer - 60000)
+                    {
+                        m_uiLastTimer = m_uiHeroicTimer;
+                        uint32 tMinutes = m_uiHeroicTimer / 60000;
+                        DoUpdateWorldState(WORLDSTATE_TIME_GUARDIAN, tMinutes);
+                    }
+                }
+
+                return;
+            }
+
         private:
             uint64 _arthasGUID;
             uint64 _meathookGUID;
@@ -305,6 +346,9 @@ class instance_culling_of_stratholme : public InstanceMapScript
             uint64 _genericBunnyGUID;
             uint32 _encounterState[MAX_ENCOUNTER];
             uint32 _crateCount;
+            uint32 m_uiHeroicTimer;
+            uint32 m_uiLastTimer;
+            bool bonus;
         };
 };
 

@@ -17,18 +17,18 @@
 
 enum Texts
 {
-    SAY_AGGRO = 0, // You are fools to have come to this place! The icy winds of Northrend will consume your souls!
-    SAY_UNCHAINED_MAGIC = 1, // Suffer, mortals, as your pathetic magic betrays you!
-    EMOTE_WARN_BLISTERING_COLD = 2, // %s prepares to unleash a wave of blistering cold!
-    SAY_BLISTERING_COLD = 3, // Can you feel the cold hand of death upon your heart?
-    SAY_RESPITE_FOR_A_TORMENTED_SOUL = 4, // Aaah! It burns! What sorcery is this?!
-    SAY_AIR_PHASE = 5, // Your incursion ends here! None shall survive!
-    SAY_PHASE_2 = 6, // Now feel my master's limitless power and despair!
-    EMOTE_WARN_FROZEN_ORB = 7, // %s fires a frozen orb towards $N!
-    SAY_KILL = 8, // Perish!
-                                             // A flaw of mortality...
-    SAY_BERSERK = 9, // Enough! I tire of these games!
-    SAY_DEATH = 10,// Free...at last...
+    SAY_AGGRO = 0,                          // You are fools to have come to this place! The icy winds of Northrend will consume your souls!
+    SAY_UNCHAINED_MAGIC = 1,                // Suffer, mortals, as your pathetic magic betrays you!
+    EMOTE_WARN_BLISTERING_COLD = 2,         // %s prepares to unleash a wave of blistering cold!
+    SAY_BLISTERING_COLD = 3,                // Can you feel the cold hand of death upon your heart?
+    SAY_RESPITE_FOR_A_TORMENTED_SOUL = 4,   // Aaah! It burns! What sorcery is this?!
+    SAY_AIR_PHASE = 5,                      // Your incursion ends here! None shall survive!
+    SAY_PHASE_2 = 6,                        // Now feel my master's limitless power and despair!
+    EMOTE_WARN_FROZEN_ORB = 7,              // %s fires a frozen orb towards $N!
+    SAY_KILL = 8,                           // Perish!
+                                            // A flaw of mortality...
+    SAY_BERSERK = 9,                        // Enough! I tire of these games!
+    SAY_DEATH = 10,                         // Free...at last...
 };
 
 enum Spells
@@ -196,6 +196,8 @@ class boss_sindragosa : public CreatureScript
                 events.ScheduleEvent(EVENT_UNCHAINED_MAGIC, urand(9000, 14000), EVENT_GROUP_LAND_PHASE);
                 events.ScheduleEvent(EVENT_ICY_GRIP, 33500, EVENT_GROUP_LAND_PHASE);
                 events.ScheduleEvent(EVENT_AIR_PHASE, 50000);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
                 mysticBuffetStack = 0;
                 isThirdPhase = false;
 
@@ -585,7 +587,8 @@ class npc_spinestalker : public CreatureScript
                 events.ScheduleEvent(EVENT_BELLOWING_ROAR, urand(20000, 25000));
                 events.ScheduleEvent(EVENT_CLEAVE_SPINESTALKER, urand(10000, 15000));
                 events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(8000, 12000));
-                me->SetReactState(REACT_DEFENSIVE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                me->SetReactState(REACT_AGGRESSIVE);
 
                 if (instance->GetData(DATA_SPINESTALKER) != 255)
                 {
@@ -701,7 +704,7 @@ class npc_rimefang : public CreatureScript
                 events.Reset();
                 events.ScheduleEvent(EVENT_FROST_BREATH_RIMEFANG, urand(12000, 15000));
                 events.ScheduleEvent(EVENT_ICY_BLAST, urand(30000, 35000));
-                me->SetReactState(REACT_DEFENSIVE);
+                me->SetReactState(REACT_AGGRESSIVE);
                 icyBlastCounter = 0;
 
                 if (instance->GetData(DATA_RIMEFANG) != 255)
@@ -1348,7 +1351,9 @@ class spell_frostwarden_handler_order_whelp : public SpellScriptLoader
 
                 std::list<Creature*>::iterator itr = unitList.begin();
                 std::advance(itr, urand(0, unitList.size()-1));
-                (*itr)->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
+                Unit* target = *itr;
+                if (target)
+                    target->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);
             }
 
             void Register()

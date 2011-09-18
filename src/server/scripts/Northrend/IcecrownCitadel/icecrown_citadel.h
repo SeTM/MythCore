@@ -316,6 +316,17 @@ enum GameObjectsIds
     GO_ORATORY_OF_THE_DAMNED_ENTRANCE       = 201563,
     GO_LADY_DEATHWHISPER_ELEVATOR           = 202220,
 
+    // Gunship loot
+    GO_GUNSHIP_ARMORY_A_10      = 201872, //
+    GO_GUNSHIP_ARMORY_A_25      = 201873, //
+    GO_GUNSHIP_ARMORY_A_10H     = 201874, //
+    GO_GUNSHIP_ARMORY_A_25H     = 201875, //
+
+    GO_GUNSHIP_ARMORY_H_10      = 202177, //
+    GO_GUNSHIP_ARMORY_H_25      = 202178, //
+    GO_GUNSHIP_ARMORY_H_10H     = 202179, //
+    GO_GUNSHIP_ARMORY_H_25H     = 202180, //
+
     // Deathbringer Saurfang
     GO_SAURFANG_S_DOOR                      = 201825,
     GO_DEATHBRINGER_S_CACHE_10N             = 202239,

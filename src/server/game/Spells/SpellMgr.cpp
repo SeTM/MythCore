@@ -2043,7 +2043,7 @@ int32 SpellMgr::CalculateSpellEffectAmount(SpellEntry const* spellEntry, uint8 e
             level = int32(spellEntry->maxLevel);
         else if (level < int32(spellEntry->baseLevel))
             level = int32(spellEntry->baseLevel);
-        level -= int32(spellEntry->spellLevel);
+        //level -= int32(spellEntry->spellLevel); why?
         basePoints += int32(level * basePointsPerLevel);
     }
 
@@ -4101,6 +4101,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 28542: // Life Drain - Sapphiron
             case 66588: // Flaming Spear
             case 54171: // Divine Storm
+            case 71899: // Bloodbolt Whirl (10 man)
+            case 71901: // Bloodbolt Whirl (10 man heroic)
                 spellInfo->MaxAffectedTargets = 3;
                 ++count;
                 break;
@@ -4126,6 +4128,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 40861: // Wicked Beam
             case 54835: // Curse of the Plaguebringer - Noth (H)
             case 54098: // Poison Bolt Volly - Faerlina (H)
+            case 71900: // Bloodbolt Whirl (25 man)
+            case 71902: // Bloodbolt Whirl (25 man heroic)
                 spellInfo->MaxAffectedTargets = 10;
                 ++count;
                 break;
@@ -4778,13 +4782,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case SPELLFAMILY_PALADIN:
                 // Sanctified Retribution talent fix
-                if (spellInfo->SpellFamilyFlags[2] & 0x20 && spellInfo->SpellIconID == 555)
+                /*if (spellInfo->SpellFamilyFlags[2] & 0x20 && spellInfo->SpellIconID == 555)
                 {
                     spellInfo->Effect[1] = 0;
                     spellInfo->Effect[2] = 0;
                 }
                 else
-                    break;
+                    break;*/
                 if (spellInfo->SpellIconID == 25 && spellInfo->Attributes & SPELL_ATTR0_PASSIVE)
                     spellInfo->EffectSpellClassMask[0][1] |= 0x20000000;
                 else

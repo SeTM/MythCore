@@ -4496,8 +4496,26 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const* aurApp, uint8
     if (!target)
         return;
 
-    if (target->HasItemFitToSpellRequirements(GetSpellProto()))
-        target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, GetAmount() / 100.0f, apply);
+    if (target->GetTypeId() == TYPEID_PLAYER)
+    {
+        for(int i = 0; i < MAX_ATTACK; ++i)
+            if(Item* item = target->ToPlayer()->GetWeaponForAttack(WeaponAttackType(i),false))
+                target->ToPlayer()->_ApplyWeaponDependentAuraDamageMod(item, WeaponAttackType(i), this, apply);
+    }
+
+    if ((GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL) && (GetSpellProto()->EquippedItemClass == -1 || target->GetTypeId() != TYPEID_PLAYER))
+    {
+        target->HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND,         TOTAL_PCT, float (GetAmount()), apply);
+        target->HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND,          TOTAL_PCT, float (GetAmount()), apply);
+        target->HandleStatModifier(UNIT_MOD_DAMAGE_RANGED,           TOTAL_PCT, float (GetAmount()), apply);
+
+        if (target->GetTypeId() == TYPEID_PLAYER)
+            target->ToPlayer()->ApplyPercentModFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, float (GetAmount()), apply);
+    }
+    else
+    {
+        // done in Player::_ApplyWeaponDependentAuraMods for !SPELL_SCHOOL_MASK_NORMAL and also for wand case
+    }
 }
 
 void AuraEffect::HandleModOffhandDamagePercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4801,9 +4819,84 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     caster->CastCustomSpell(target, 63338, &damage, NULL, NULL, true);
                     break;
                 }
+                case 61551: // Toy Train Set
+                {
+                    if (target->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    // Server send SMSG_PLAY_OBJECT_SOUND with train sound for each race 0o
+                    switch(target->getRace())
+                    {
+                    case RACE_BLOODELF:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(9672);
+                        else 
+                            target->PlayDistanceSound(9644);
+                        break;
+                    case RACE_DRAENEI:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(9722);
+                        else 
+                            target->PlayDistanceSound(9697);
+                        break;
+                    case RACE_DWARF:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7636);
+                        else 
+                            target->PlayDistanceSound(7637);
+                        break;
+                    case RACE_HUMAN:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7634);
+                        else 
+                            target->PlayDistanceSound(7635);
+                        break;
+                    case RACE_ORC:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7638);
+                        else 
+                            target->PlayDistanceSound(7639);
+                        break;
+                    case RACE_GNOME:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7640);
+                        else 
+                            target->PlayDistanceSound(7641);
+                        break;
+                    case RACE_NIGHTELF:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7642);
+                        else 
+                            target->PlayDistanceSound(7643);
+                        break;
+                    case RACE_UNDEAD_PLAYER:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7644);
+                        else 
+                            target->PlayDistanceSound(7645);
+                        break;
+                    case RACE_TAUREN:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7646);
+                        else 
+                            target->PlayDistanceSound(7647);
+                        break;
+                    case RACE_TROLL:
+                        if(target->getGender()==GENDER_MALE)
+                            target->PlayDistanceSound(7648);
+                        else 
+                            target->PlayDistanceSound(7649);
+                        break;
+                    default:
+                        break;
+                    }
+
+                    target->HandleEmoteCommand(EMOTE_ONESHOT_TRAIN);
+                    return;
+                }
                 case 71563:
                     if (Aura* newAura = target->AddAura(71564, target))
                         newAura->SetStackAmount(newAura->GetSpellProto()->StackAmount);
+                    break;
             }
         }
         // AT REMOVE
