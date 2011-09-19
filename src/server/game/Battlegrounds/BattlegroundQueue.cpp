@@ -355,7 +355,7 @@ void BattlegroundQueue::RemovePlayer(const uint64& guid, bool decreaseInvitedCou
     if (group->ArenaType && group->IsRated && group->Players.empty() && sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
     {
         ArenaTeam *Team = sArenaTeamMgr->GetArenaTeamById(group->ArenaTeamId);
-        if (Team)
+        if (Team && decreaseInvitedCount)
             sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_EXIT, Team->GetName().c_str(), group->ArenaType, group->ArenaType/*, group->ArenaTeamRating*/);
     }
 
