@@ -129,8 +129,6 @@ public:
 
         int BONUS_TOKEN = 37711;
         Item * i = pPlayer->GetItemByEntry(BONUS_TOKEN);
-        if (i == 0)
-            return false;
 
         switch (uiAction)
         {
@@ -174,6 +172,8 @@ public:
 
         if ((uiAction & ACTION_SHOP) == ACTION_SHOP)
         {
+            if (i == 0)
+                return false;
             uint32 cat = uiAction & 7;
 
             if (cat == 0)
@@ -210,6 +210,8 @@ public:
         }
         if ((uiAction & ACTION_BUY) == ACTION_BUY)
         {
+            if (i == 0)
+                return false;
             uint32 cat = uiAction & 7;
             uint32 id = uiAction >> 5;
             item it = itemDB((category)cat)[id];
