@@ -138,6 +138,7 @@ public:
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
             pCreature->MonsterWhisper(GOSSIP_SUCCESS, pPlayer->GetGUID());
@@ -150,6 +151,7 @@ public:
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
             pCreature->MonsterWhisper(GOSSIP_SUCCESS, pPlayer->GetGUID());
@@ -162,6 +164,7 @@ public:
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
             pCreature->MonsterWhisper(GOSSIP_SUCC_BUY, pPlayer->GetGUID());
@@ -172,8 +175,6 @@ public:
 
         if ((uiAction & ACTION_SHOP) == ACTION_SHOP)
         {
-            if (i == 0)
-                return false;
             uint32 cat = uiAction & 7;
 
             if (cat == 0)
@@ -211,7 +212,10 @@ public:
         if ((uiAction & ACTION_BUY) == ACTION_BUY)
         {
             if (i == 0)
+            {
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
+            }
             uint32 cat = uiAction & 7;
             uint32 id = uiAction >> 5;
             item it = itemDB((category)cat)[id];
@@ -221,6 +225,7 @@ public:
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
 
