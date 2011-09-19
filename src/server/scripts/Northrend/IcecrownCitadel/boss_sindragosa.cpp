@@ -588,7 +588,7 @@ class npc_spinestalker : public CreatureScript
                 events.ScheduleEvent(EVENT_CLEAVE_SPINESTALKER, urand(10000, 15000));
                 events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(8000, 12000));
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                me->SetReactState(REACT_DEFENSIVE);
+                me->SetReactState(REACT_AGGRESSIVE);
 
                 if (instance->GetData(DATA_SPINESTALKER) != 255)
                 {
@@ -704,7 +704,7 @@ class npc_rimefang : public CreatureScript
                 events.Reset();
                 events.ScheduleEvent(EVENT_FROST_BREATH_RIMEFANG, urand(12000, 15000));
                 events.ScheduleEvent(EVENT_ICY_BLAST, urand(30000, 35000));
-                me->SetReactState(REACT_DEFENSIVE);
+                me->SetReactState(REACT_AGGRESSIVE);
                 icyBlastCounter = 0;
 
                 if (instance->GetData(DATA_RIMEFANG) != 255)
