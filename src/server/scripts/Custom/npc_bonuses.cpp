@@ -129,17 +129,16 @@ public:
 
         int BONUS_TOKEN = 37711;
         Item * i = pPlayer->GetItemByEntry(BONUS_TOKEN);
-        if (i == 0)
-            return false;
 
         switch (uiAction)
         {
         case ACTION_RACE:
-            if (pPlayer->GetMoney() >= COST_RACE)
+            if (pPlayer->GetMoney() >= COST_RACE * 100 * 100)
                 pPlayer->SetMoney(pPlayer->GetMoney() - COST_RACE * 100 * 100);
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
             pCreature->MonsterWhisper(GOSSIP_SUCCESS, pPlayer->GetGUID());
@@ -147,11 +146,12 @@ public:
             pPlayer->PlayerTalkClass->SendCloseGossip();
             return true;
         case ACTION_RENAME:
-            if (pPlayer->GetMoney() >= COST_RENAME)
+            if (pPlayer->GetMoney() >= COST_RENAME * 100 * 100)
                 pPlayer->SetMoney(pPlayer->GetMoney() - COST_RENAME * 100 * 100);
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
             pCreature->MonsterWhisper(GOSSIP_SUCCESS, pPlayer->GetGUID());
@@ -164,6 +164,7 @@ public:
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
             pCreature->MonsterWhisper(GOSSIP_SUCC_BUY, pPlayer->GetGUID());
@@ -210,6 +211,11 @@ public:
         }
         if ((uiAction & ACTION_BUY) == ACTION_BUY)
         {
+            if (i == 0)
+            {
+                pPlayer->PlayerTalkClass->SendCloseGossip();
+                return false;
+            }
             uint32 cat = uiAction & 7;
             uint32 id = uiAction >> 5;
             item it = itemDB((category)cat)[id];
@@ -219,6 +225,7 @@ public:
             else
             {
                 pCreature->MonsterWhisper(GOSSIP_NOMONEY, pPlayer->GetGUID());
+                pPlayer->PlayerTalkClass->SendCloseGossip();
                 return false;
             }
 
