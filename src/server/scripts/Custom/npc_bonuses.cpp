@@ -135,7 +135,7 @@ public:
         switch (uiAction)
         {
         case ACTION_RACE:
-            if (pPlayer->GetMoney() >= COST_RACE)
+            if (pPlayer->GetMoney() >= COST_RACE * 100 * 100)
                 pPlayer->SetMoney(pPlayer->GetMoney() - COST_RACE * 100 * 100);
             else
             {
@@ -147,7 +147,7 @@ public:
             pPlayer->PlayerTalkClass->SendCloseGossip();
             return true;
         case ACTION_RENAME:
-            if (pPlayer->GetMoney() >= COST_RENAME)
+            if (pPlayer->GetMoney() >= COST_RENAME * 100 * 100)
                 pPlayer->SetMoney(pPlayer->GetMoney() - COST_RENAME * 100 * 100);
             else
             {
