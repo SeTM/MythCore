@@ -159,7 +159,7 @@ public:
             pPlayer->PlayerTalkClass->SendCloseGossip();
             return true;
         case ACTION_GOLD:
-            if (i->GetCount() >= COST_GOLD)
+            if (i != 0 && i->GetCount() >= COST_GOLD)
                 i->SetCount(i->GetCount() - COST_GOLD);
             else
             {
