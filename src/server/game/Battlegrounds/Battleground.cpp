@@ -192,6 +192,8 @@ Battleground::Battleground()
 
     m_PrematureCountDown = false;
 
+    m_ArenaEnded = false;
+
     m_HonorMode = BG_NORMAL;
 
     m_StartDelayTimes[BG_STARTING_EVENT_FIRST]  = BG_START_DELAY_2M;
@@ -260,6 +262,24 @@ void Battleground::Update(uint32 diff)
 
     if (GetStatus() == STATUS_WAIT_LEAVE)
         _ProcessLeave(diff);
+
+    // Arena time limit
+    if(isArena() && !m_ArenaEnded)
+    {
+        if(m_StartTime > uint32(ARENA_TIME_LIMIT))
+        {
+            Team winner;
+            // winner is team with higher damage
+            if(GetDamageDoneForTeam(ALLIANCE) > GetDamageDoneForTeam(HORDE))
+                winner = ALLIANCE;
+            else if (GetDamageDoneForTeam(HORDE) > GetDamageDoneForTeam(ALLIANCE))
+                winner = HORDE;
+            else
+                winner = TEAM_OTHER;
+            EndBattleground(winner);
+            m_ArenaEnded = true;
+        }
+    }
 
     // Update start time and reset stats timer
     m_StartTime += diff;
@@ -1173,6 +1193,23 @@ void Battleground::AddPlayer(Player* plr)
     sLog->outDetail("BATTLEGROUND: Player %s joined the battle.", plr->GetName());
 }
 
+uint32 Battleground::GetDamageDoneForTeam(uint32 team)
+{
+    uint32 finaldamage = 0;
+    for(BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        uint32 bgTeam = itr->second.Team;
+        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        if (!plr)
+            continue;
+        if(!bgTeam) 
+            bgTeam = plr->GetTeam();
+        if(bgTeam == team)
+            finaldamage += GetPlayerScore(plr, SCORE_DAMAGE_DONE);
+    }
+    return finaldamage;
+}
+
 // this method adds player to his team's bg group, or sets his correct group if player is already in bg group
 void Battleground::AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team)
 {
@@ -1407,6 +1444,27 @@ void Battleground::RemovePlayerFromResurrectQueue(const uint64& player_guid)
                 return;
             }
         }
+    }
+}
+
+uint32 Battleground::GetPlayerScore(Player *Source, uint32 type) 
+{ 
+    BattlegroundScoreMap::const_iterator itr = m_PlayerScores.find(Source->GetGUID()); 
+
+    if(itr == m_PlayerScores.end())                         // player not found... 
+        return -1; 
+
+    switch(type) 
+    { 
+    case SCORE_KILLING_BLOWS:                           // Killing blows 
+        return itr->second->KillingBlows; 
+    case SCORE_DEATHS:                                  // Deaths 
+        return itr->second->Deaths;
+    case SCORE_DAMAGE_DONE:
+        return itr->second->DamageDone;					// Damage Done
+    default: 
+        sLog->outError("BattleGround: Unknown player score type %u", type); 
+        return -1;
     }
 }
 
