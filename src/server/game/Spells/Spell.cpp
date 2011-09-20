@@ -2633,7 +2633,9 @@ void Spell::SelectEffectTargets(uint32 i, uint32 cur)
                                 }
                             }
                             break;
-
+                        case 50313:
+                            SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENEMY);
+                            break;
                         default:
                             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Spell (ID: %u) (caster Entry: %u) does not have type CONDITION_SOURCE_TYPE_SPELL_SCRIPT_TARGET record in `conditions` table.", m_spellInfo->Id, m_caster->GetEntry());
 

@@ -1354,6 +1354,154 @@ public:
 
 };
 
+/*########
+# npc_coren_direbrew
+#########*/
+
+class npc_coren_direbrew : public CreatureScript
+{
+public:
+    npc_coren_direbrew() : CreatureScript("npc_coren_direbrew") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_coren_direbrewAI (pCreature);
+    }
+
+    struct npc_coren_direbrewAI : public ScriptedAI
+    {
+        npc_coren_direbrewAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+
+        uint32 DisarmTimer;
+        bool m_first_summon,m_second_summon;
+        uint32 m_summon_timer;
+        uint32 ChargeTimer;
+        //uint32 IlsaTimer,UrsulaTimer;
+
+        void Reset()
+        {
+            me->setFaction(35);
+            m_first_summon = false;
+            m_second_summon = false;
+            DisarmTimer = 10000;
+            m_summon_timer = 2000;
+            ChargeTimer = 14000;
+        }
+
+        void sQuestReward(Player* pPlayer, const Quest* pQuest, uint32 reward)
+        {
+            if (pQuest->GetQuestId() == 12062)
+            {
+                me->setFaction(14);
+                me->AI()->AttackStart(pPlayer);
+            }            
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            //Return since we have no target
+            if (!UpdateVictim())
+                return;
+
+            if (DisarmTimer <= diff)
+            {
+                DoCast(me->getVictim(),47310);
+                DisarmTimer = 15000;
+            }
+            else DisarmTimer -= diff;
+
+            if (ChargeTimer <= diff)
+            {
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                    DoCast(pTarget, 47718);
+                ChargeTimer = 16000;
+            } else ChargeTimer -= diff;
+
+            if (m_summon_timer <= diff)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (Creature* tmp = me->SummonCreature(26776,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,1000))
+                        if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        {
+                            tmp->setFaction(me->getFaction());
+                            tmp->AI()->AttackStart(pTarget);
+                        }
+                }
+                m_summon_timer = 20000;
+            } m_summon_timer -= diff;
+
+            if (!m_first_summon && me->GetHealth() <= (me->GetMaxHealth() * 0.66f))
+            {
+                m_first_summon = true;
+
+                if (Creature* tmp = me->SummonCreature(26764,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,1000))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    {
+                        tmp->setFaction(me->getFaction());
+                        tmp->AI()->AttackStart(pTarget);
+                    }
+            }
+
+            if (!m_second_summon && me->GetHealth() <= (me->GetMaxHealth() * 0.33f))
+            {
+                m_second_summon = true;
+
+                if (Creature* tmp = me->SummonCreature(26822,me->GetPositionX(),me->GetPositionY(),me->GetPositionZ(),0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,1000))
+                    if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    {
+                        tmp->setFaction(me->getFaction());
+                        tmp->AI()->AttackStart(pTarget);
+                    }
+            }
+
+            DoMeleeAttackIfReady();
+        }
+    };
+};
+
+/*########
+# npc_direbrew_minion
+#########*/
+
+class npc_direbrew_minion : public CreatureScript
+{
+public:
+    npc_direbrew_minion() : CreatureScript("npc_direbrew_minion") { }
+
+    CreatureAI* GetAI(Creature* pCreature) const
+    {
+        return new npc_direbrew_minionAI (pCreature);
+    }
+
+    struct npc_direbrew_minionAI : public ScriptedAI
+    {
+        npc_direbrew_minionAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+        uint32 DisarmTimer;
+
+        void Reset()
+        {
+            DisarmTimer = 5000;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            //Return since we have no target
+            if (!UpdateVictim())
+                return;
+
+            if (DisarmTimer <= diff)
+            {
+                DoCast(me->getVictim(),50313, true);
+                DisarmTimer = 15000;
+            }
+            else DisarmTimer -= diff;
+            DoMeleeAttackIfReady();
+        }
+    };
+};
+
 /*######
 ##
 ######*/
@@ -1371,4 +1519,6 @@ void AddSC_blackrock_depths()
     //new npc_marshal_windsor();
     //new npc_marshal_reginald_windsor();
     new npc_rocknot();
+    new npc_coren_direbrew();
+    new npc_direbrew_minion();
 }
