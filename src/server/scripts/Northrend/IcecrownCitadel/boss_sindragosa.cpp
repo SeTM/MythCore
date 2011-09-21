@@ -600,13 +600,26 @@ class npc_spinestalker : public CreatureScript
             void JustRespawned()
             {
                 ScriptedAI::JustRespawned();
-                instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 1); // this cannot be in Reset because reset also happens on evade
+                //instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 1); // this cannot be in Reset because reset also happens on evade
             }
 
             void JustDied(Unit* /*killer*/)
             {
                 events.Reset();
-                instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 0);
+                //instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 0);
+                if (instance)
+                    if (Creature* rimefang = Unit::GetCreature(*me, instance->GetData64(DATA_RIMEFANG)))
+                    {
+                        if (!rimefang->isAlive())
+                        {
+                            me->GetMap()->LoadGrid(SindragosaSpawnPos.GetPositionX(), SindragosaSpawnPos.GetPositionY());
+                            if (Creature* boss = me->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
+                            {
+                                boss->setActive(true);
+                                boss->AI()->DoAction(ACTION_START_FROSTWYRM);
+                            }
+                        }
+                    }
             }
 
             void DoAction(int32 const action)
@@ -717,13 +730,26 @@ class npc_rimefang : public CreatureScript
             void JustRespawned()
             {
                 ScriptedAI::JustRespawned();
-                instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 1); // this cannot be in Reset because reset also happens on evade
+                //instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 1); // this cannot be in Reset because reset also happens on evade
             }
 
             void JustDied(Unit* /*killer*/)
             {
                 events.Reset();
-                instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 0);
+                //instance->SetData(DATA_SINDRAGOSA_FROSTWYRMS, 0);
+                if (instance)
+                    if (Creature* rimefang = Unit::GetCreature(*me, instance->GetData64(DATA_SPINESTALKER)))
+                    {
+                        if (!rimefang->isAlive())
+                        {
+                            me->GetMap()->LoadGrid(SindragosaSpawnPos.GetPositionX(), SindragosaSpawnPos.GetPositionY());
+                            if (Creature* boss = me->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
+                            {
+                                boss->setActive(true);
+                                boss->AI()->DoAction(ACTION_START_FROSTWYRM);
+                            }
+                        }
+                    }
             }
 
             void DoAction(int32 const action)
@@ -1431,6 +1457,9 @@ class at_sindragosa_lair : public AreaTriggerScript
         {
             if (InstanceScript* instance = player->GetInstanceScript())
             {
+                if (!player)
+                    return true;
+
                 if (!instance->GetData(DATA_SPINESTALKER))
                     if (Creature* spinestalker = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_SPINESTALKER)))
                         spinestalker->AI()->DoAction(ACTION_START_FROSTWYRM);
@@ -1439,7 +1468,7 @@ class at_sindragosa_lair : public AreaTriggerScript
                     if (Creature* rimefang = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_RIMEFANG)))
                         rimefang->AI()->DoAction(ACTION_START_FROSTWYRM);
 
-                if (!instance->GetData(DATA_SINDRAGOSA_FROSTWYRMS) && instance->GetBossState(DATA_SINDRAGOSA) != DONE)
+                /*if (!instance->GetData(DATA_SINDRAGOSA_FROSTWYRMS) && instance->GetBossState(DATA_SINDRAGOSA) != DONE)
                 {
                     if (player->GetMap()->IsHeroic() && !instance->GetData(DATA_HEROIC_ATTEMPTS))
                         return true;
@@ -1447,6 +1476,30 @@ class at_sindragosa_lair : public AreaTriggerScript
                     player->GetMap()->LoadGrid(SindragosaSpawnPos.GetPositionX(), SindragosaSpawnPos.GetPositionY());
                     if (Creature* sindragosa = player->GetMap()->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
                         sindragosa->AI()->DoAction(ACTION_START_FROSTWYRM);
+                }*/
+
+                if (instance->GetBossState(DATA_SINDRAGOSA) != DONE)
+                {
+                    if (player->GetMap()->IsHeroic() && !instance->GetData(DATA_HEROIC_ATTEMPTS))
+                        return true;
+
+                    if (Creature* sindra = player->GetMap()->GetCreature(instance->GetData64(DATA_SINDRAGOSA)))
+                        return true;
+
+                    Creature* rimefang = Unit::GetCreature(*player, instance->GetData64(DATA_RIMEFANG));
+                    Creature* spinestalker = Unit::GetCreature(*player, instance->GetData64(DATA_SPINESTALKER));
+                    if (rimefang && spinestalker)
+                    {
+                        if (!rimefang->isAlive() && !spinestalker->isAlive())
+                        {
+                            player->GetMap()->LoadGrid(SindragosaSpawnPos.GetPositionX(), SindragosaSpawnPos.GetPositionY());
+                            if (Creature* boss = player->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
+                            {
+                                boss->setActive(true);
+                                boss->AI()->DoAction(ACTION_START_FROSTWYRM);
+                            }
+                        }
+                    }
                 }
             }
 

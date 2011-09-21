@@ -958,7 +958,11 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 }
                                 break;
                             case 1:
-                                ++FrostwyrmCount;
+                                {
+                                    ++FrostwyrmCount;
+                                    if (FrostwyrmCount > 2)
+                                        FrostwyrmCount = 2;
+                                }
                                 break;
                             default:
                                 FrostwyrmCount = data;
