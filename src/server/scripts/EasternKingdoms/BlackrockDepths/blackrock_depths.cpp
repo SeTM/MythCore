@@ -1384,7 +1384,7 @@ public:
             m_first_summon = false;
             m_second_summon = false;
             DisarmTimer = 10000;
-            m_summon_timer = 2000;
+            m_summon_timer = urand(2000, 4000);
             ChargeTimer = 14000;
         }
 
@@ -1414,7 +1414,7 @@ public:
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     DoCast(pTarget, 47718);
-                ChargeTimer = 16000;
+                ChargeTimer = urand(14000, 18000);
             } else ChargeTimer -= diff;
 
             if (m_summon_timer <= diff)
@@ -1482,7 +1482,7 @@ public:
 
         void Reset()
         {
-            DisarmTimer = 5000;
+            DisarmTimer = urand(4500, 8500);
         }
 
         void UpdateAI(const uint32 diff)
@@ -1493,8 +1493,9 @@ public:
 
             if (DisarmTimer <= diff)
             {
-                DoCast(me->getVictim(),50313, true);
-                DisarmTimer = 15000;
+                if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    DoCast(pTarget,50313, true);
+                DisarmTimer = urand(14500, 18500);
             }
             else DisarmTimer -= diff;
             DoMeleeAttackIfReady();
