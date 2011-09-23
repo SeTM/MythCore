@@ -516,8 +516,38 @@ class boss_professor_putricide : public CreatureScript
                             EnterEvadeMode();
                             break;
                         case EVENT_ROTFACE_VILE_GAS:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                                DoCast(target, SPELL_VILE_GAS_H, true); // triggered, to skip LoS check
+                            /*if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                                DoCast(target, SPELL_VILE_GAS_H, true); // triggered, to skip LoS check*/
+                            if (Creature* rotface = Unit::GetCreature(*me, instance->GetData64(DATA_ROTFACE)))
+                            {
+                                Unit* pTarget = NULL;
+                                std::list<HostileReference*>& t_list = rotface->getThreatManager().getThreatList();
+                                std::vector<Unit *> target_list;
+                                // find random player target
+                                for(std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                                {
+                                    pTarget = Unit::GetUnit(*rotface, (*itr)->getUnitGuid());
+                                    if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER && rotface->GetDistance(pTarget) > 8.0f)
+                                        target_list.push_back(pTarget);
+                                    pTarget = NULL;
+                                }
+                                if (target_list.size())
+                                    pTarget = *(target_list.begin()+rand()%target_list.size());
+
+                                if (!pTarget)
+                                {
+                                    std::list<Unit*> targets;
+                                    uint32 minTargets = RAID_MODE<uint32>(3, 8, 3, 8);
+                                    rotface->AI()->SelectTargetList(targets, minTargets, SELECT_TARGET_RANDOM, -5.0f, true);
+                                    float minDist = 0.0f;
+                                    if (targets.size() >= minTargets)
+                                        minDist = -5.0f;
+
+                                    pTarget = rotface->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, minDist, true);
+                                }
+                                if (pTarget)
+                                    DoCast(pTarget, SPELL_VILE_GAS_H, true); // triggered, to skip LoS check
+                            }
                             events.ScheduleEvent(EVENT_ROTFACE_VILE_GAS, urand(15000, 20000), 0, PHASE_ROTFACE);
                             break;
                         case EVENT_ROTFACE_OOZE_FLOOD:
