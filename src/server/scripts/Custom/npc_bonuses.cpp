@@ -143,6 +143,7 @@ public:
             }
             pCreature->MonsterWhisper(GOSSIP_SUCCESS, pPlayer->GetGUID());
             pPlayer->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
+            pPlayer->SaveToDB();
             pPlayer->PlayerTalkClass->SendCloseGossip();
             return true;
         case ACTION_RENAME:
@@ -156,6 +157,7 @@ public:
             }
             pCreature->MonsterWhisper(GOSSIP_SUCCESS, pPlayer->GetGUID());
             pPlayer->SetAtLoginFlag(AT_LOGIN_RENAME);
+            pPlayer->SaveToDB();
             pPlayer->PlayerTalkClass->SendCloseGossip();
             return true;
         case ACTION_GOLD:
@@ -169,6 +171,7 @@ public:
             }
             pCreature->MonsterWhisper(GOSSIP_SUCC_BUY, pPlayer->GetGUID());
             pPlayer->SetMoney(pPlayer->GetMoney() + 1000 * 100 * 100);
+            pPlayer->SaveToDB();
             pPlayer->PlayerTalkClass->SendCloseGossip();
             return true;
         }
@@ -231,6 +234,7 @@ public:
 
             pCreature->MonsterWhisper(GOSSIP_SUCC_BUY, pPlayer->GetGUID());
             pPlayer->AddItem(it.id, 1);
+            pPlayer->SaveToDB();
             pPlayer->PlayerTalkClass->SendCloseGossip();
         }
 
