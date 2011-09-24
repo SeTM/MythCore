@@ -6901,10 +6901,18 @@ void Spell::EffectDiscoverTaxi(SpellEffIndex effIndex)
         unitTarget->ToPlayer()->GetSession()->SendDiscoverNewTaxiNode(nodeid);
 }
 
-void Spell::EffectTitanGrip(SpellEffIndex /*effIndex*/)
+void Spell::EffectTitanGrip(SpellEffIndex effIndex)
 {
+    // Make sure "Titan's Grip" (49152) penalty spell does not silently change
+    if (m_spellInfo->EffectMiscValue[effIndex] != 49152)
+        sLog->outError("Spell::EffectTitanGrip: Spell %u has unexpected EffectMiscValue '%u'", m_spellInfo->Id, m_spellInfo->EffectMiscValue[effIndex]);
+
     if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
+    {
         unitTarget->ToPlayer()->SetCanTitanGrip(true);
+        if (unitTarget->ToPlayer()->HasTwoHandWeaponInOneHand() && !unitTarget->ToPlayer()->HasAura(49152))
+            unitTarget->ToPlayer()->CastSpell(unitTarget, 49152, true);
+    }
 }
 
 void Spell::EffectRedirectThreat(SpellEffIndex /*effIndex*/)
