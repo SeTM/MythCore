@@ -198,7 +198,7 @@ public:
             {
                 --cat;
                 std::vector<item> & cati = itemDB((category)cat);
-                for (int i = 0; i < cati.size(); ++i)
+                for (uint32 i = 0; i < cati.size(); ++i)
                 {
                     if (cati[i].lvl > pPlayer->getLevel())
                         continue;
