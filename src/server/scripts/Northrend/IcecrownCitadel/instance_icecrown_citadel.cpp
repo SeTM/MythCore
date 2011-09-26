@@ -425,12 +425,14 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case GO_GUNSHIP_ARMORY_A_10H:
                     case GO_GUNSHIP_ARMORY_A_25H:
                         GunShipBattleCacheAGuid = go->GetGUID();
+                        go->SetUInt32Value(GAMEOBJECT_FACTION, 12);
                         break;
                     case GO_GUNSHIP_ARMORY_H_10:
                     case GO_GUNSHIP_ARMORY_H_25:
                     case GO_GUNSHIP_ARMORY_H_10H:
                     case GO_GUNSHIP_ARMORY_H_25H:
                         GunShipBattleCacheHGuid = go->GetGUID();
+                        go->SetUInt32Value(GAMEOBJECT_FACTION, 29);
                         break;
                     case GO_SCOURGE_TRANSPORTER_SAURFANG:
                         SaurfangTeleportGUID = go->GetGUID();
