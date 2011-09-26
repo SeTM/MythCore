@@ -102,6 +102,8 @@ enum Events
     EVENT_ICE_TOMB = 10,
     EVENT_FROST_BOMB = 11,
     EVENT_LAND = 12,
+    EVENT_AIR_MOVEMENT              = 21,
+    EVENT_THIRD_PHASE_CHECK         = 22,
 
     // Spinestalker
     EVENT_BELLOWING_ROAR = 13,
@@ -198,6 +200,7 @@ class boss_sindragosa : public CreatureScript
                 events.ScheduleEvent(EVENT_AIR_PHASE, 50000);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 mysticBuffetStack = 0;
+                _isInAirPhase = false;
                 isThirdPhase = false;
 
                 if (instance->GetData(DATA_SINDRAGOSA_FROSTWYRMS) != 255)
@@ -291,7 +294,7 @@ class boss_sindragosa : public CreatureScript
                         DoZoneInCombat();
                         break;
                     case POINT_AIR_PHASE:
-                        me->CastCustomSpell(SPELL_ICE_TOMB_TARGET, SPELLVALUE_MAX_TARGETS, RAID_MODE<int32>(2, 5, 3, 6), false);
+                        me->CastCustomSpell(SPELL_ICE_TOMB_TARGET, SPELLVALUE_MAX_TARGETS, RAID_MODE<int32>(2, 5, 2, 6), false);
                         events.ScheduleEvent(EVENT_FROST_BOMB, 8000);
                         break;
                     case POINT_LAND:
@@ -301,6 +304,7 @@ class boss_sindragosa : public CreatureScript
                         if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
                             me->GetMotionMaster()->MovementExpired();
                         DoStartMovement(me->getVictim());
+                        _isInAirPhase = false;
                         // trigger Asphyxiation
                         summons.DoAction(NPC_ICE_TOMB, ACTION_TRIGGER_ASPHYXIATION);
                         break;
@@ -313,11 +317,8 @@ class boss_sindragosa : public CreatureScript
             {
                 if (!isThirdPhase && !HealthAbovePct(35))
                 {
-                    Talk(SAY_PHASE_2);
                     events.CancelEvent(EVENT_AIR_PHASE);
-                    events.ScheduleEvent(EVENT_ICE_TOMB, urand(7000, 10000));
-                    events.RescheduleEvent(EVENT_ICY_GRIP, urand(35000, 40000));
-                    DoCast(me, SPELL_MYSTIC_BUFFET, true);
+                    events.ScheduleEvent(EVENT_THIRD_PHASE_CHECK, 1000);
                     isThirdPhase = true;
                 }
             }
@@ -427,6 +428,7 @@ class boss_sindragosa : public CreatureScript
                             Talk(SAY_BLISTERING_COLD);
                             break;
                         case EVENT_AIR_PHASE:
+                            _isInAirPhase = true;
                             Talk(SAY_AIR_PHASE);
                             me->SetFlying(true);
                             me->AddUnitMovementFlag(MOVEMENTFLAG_LEVITATING);
@@ -472,6 +474,19 @@ class boss_sindragosa : public CreatureScript
                             me->GetMotionMaster()->MovePoint(POINT_LAND, SindragosaLandPos);
                             break;
                         }
+                        case EVENT_THIRD_PHASE_CHECK:
+                            {
+                                if (!_isInAirPhase)
+                                {
+                                    Talk(SAY_PHASE_2);
+                                    events.ScheduleEvent(EVENT_ICE_TOMB, urand(7000, 10000));
+                                    events.RescheduleEvent(EVENT_ICY_GRIP, urand(35000, 40000));
+                                    DoCast(me, SPELL_MYSTIC_BUFFET, true);
+                                }
+                                else
+                                    events.ScheduleEvent(EVENT_THIRD_PHASE_CHECK, 5000);
+                                break;
+                            }
                         default:
                             break;
                     }
@@ -482,6 +497,7 @@ class boss_sindragosa : public CreatureScript
 
         private:
             uint8 mysticBuffetStack;
+            bool _isInAirPhase;
             bool isThirdPhase;
         };
 
