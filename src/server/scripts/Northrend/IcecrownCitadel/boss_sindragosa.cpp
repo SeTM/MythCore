@@ -196,8 +196,7 @@ class boss_sindragosa : public CreatureScript
                 events.ScheduleEvent(EVENT_UNCHAINED_MAGIC, urand(9000, 14000), EVENT_GROUP_LAND_PHASE);
                 events.ScheduleEvent(EVENT_ICY_GRIP, 33500, EVENT_GROUP_LAND_PHASE);
                 events.ScheduleEvent(EVENT_AIR_PHASE, 50000);
-                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                me->SetReactState(REACT_AGGRESSIVE);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 mysticBuffetStack = 0;
                 isThirdPhase = false;
 
@@ -286,6 +285,7 @@ class boss_sindragosa : public CreatureScript
                         me->SetHomePosition(SindragosaLandPos);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         me->SetSpeed(MOVE_FLIGHT, 2.0f);
+                        me->SetReactState(REACT_AGGRESSIVE);
 
                         // Sindragosa enters combat as soon as she lands
                         DoZoneInCombat();
@@ -589,6 +589,7 @@ class npc_spinestalker : public CreatureScript
                 events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(8000, 12000));
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
+                me->setActive(true);
 
                 if (instance->GetData(DATA_SPINESTALKER) != 255)
                 {
@@ -719,6 +720,7 @@ class npc_rimefang : public CreatureScript
                 events.ScheduleEvent(EVENT_ICY_BLAST, urand(30000, 35000));
                 me->SetReactState(REACT_AGGRESSIVE);
                 icyBlastCounter = 0;
+                me->setActive(true);
 
                 if (instance->GetData(DATA_RIMEFANG) != 255)
                 {
@@ -760,7 +762,6 @@ class npc_rimefang : public CreatureScript
                     if (me->isDead())
                         return;
 
-                    me->setActive(true);
                     me->SetSpeed(MOVE_FLIGHT, 2.0f);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                     float moveTime = me->GetExactDist(&RimefangFlyPos)/(me->GetSpeed(MOVE_FLIGHT)*0.001f);
