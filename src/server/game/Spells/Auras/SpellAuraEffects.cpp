@@ -4516,6 +4516,25 @@ void AuraEffect::HandleModDamagePercentDone(AuraApplication const* aurApp, uint8
     {
         // done in Player::_ApplyWeaponDependentAuraMods for !SPELL_SCHOOL_MASK_NORMAL and also for wand case
     }
+
+    // Skip non magic case for speedup
+    if((GetMiscValue() & SPELL_SCHOOL_MASK_MAGIC) == 0)
+        return;
+
+    if( GetSpellProto()->EquippedItemClass != -1 || GetSpellProto()->EquippedItemInventoryTypeMask != 0 )
+    {
+        // wand magic case (skip generic to all item spell bonuses)
+        // done in Player::_ApplyWeaponDependentAuraMods
+
+        // Skip item specific requirements for not wand magic damage
+        return;
+    }
+
+    // Magic damage percent modifiers implemented in Unit::SpellDamageBonusDone
+    // Send info to client
+    if(target->GetTypeId() == TYPEID_PLAYER)
+        for(int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
+            target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT + i, float (GetAmount()), apply);
 }
 
 void AuraEffect::HandleModOffhandDamagePercent(AuraApplication const* aurApp, uint8 mode, bool apply) const
