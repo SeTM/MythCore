@@ -761,7 +761,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
     amount *= GetBase()->GetStackAmount();
 
     // Mixology - increase effect and duration of alchemy spells which the caster has
-    if (GetBase()->GetUnitOwner()->GetTypeId() == TYPEID_PLAYER)
+    if (GetBase()->GetType() == UNIT_AURA_TYPE && GetBase()->GetUnitOwner() && GetBase()->GetUnitOwner()->GetTypeId() == TYPEID_PLAYER)
     {
         if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION &&
             (sSpellMgr->IsSpellMemberOfSpellGroup(GetSpellProto()->Id, SPELL_GROUP_ELIXIR_BATTLE) ||
