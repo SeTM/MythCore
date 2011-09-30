@@ -352,6 +352,9 @@ bool AntiCheat::CheckNeeded(AntiCheatCheck checktype)
     if (GetMover()->HasAuraType(SPELL_AURA_MOD_CONFUSE))
         return false;
 
+    if (GetMover()->HasAura(51852))
+        return false;
+
     AntiCheatCheck checkMainType =  (checktype >= 100) ? AntiCheatCheck(checktype / 100) : checktype;
 
     switch( checkMainType)
@@ -360,7 +363,7 @@ bool AntiCheat::CheckNeeded(AntiCheatCheck checktype)
             return false;
             break;
         case CHECK_MOVEMENT:
-            if (   GetPlayer()->GetTransport()
+            if (GetPlayer()->GetTransport()
                 || GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) 
                 || GetMover()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE
                 || GetPlayer()->isInFlight())
@@ -392,7 +395,7 @@ bool AntiCheat::CheckNeeded(AntiCheatCheck checktype)
     switch( checktype)
     {
         case CHECK_MOVEMENT_SPEED:
-            if  (GetMover()->HasAura(56266))
+            if (GetMover()->HasAura(56266))
                 return false;
             break;
         case CHECK_MOVEMENT_FLY:
@@ -436,7 +439,6 @@ bool AntiCheat::CheckNeeded(AntiCheatCheck checktype)
     }
 
     return true;
-
 }
 
 // Movement checks
