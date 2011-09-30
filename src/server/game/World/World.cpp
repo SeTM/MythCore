@@ -579,8 +579,8 @@ void World::LoadConfigSettings(bool reload)
     // GameGuard Config
     m_bool_configs[CONFIG_GAMEGUARD_ENABLE] = sConfig->GetBoolDefault("GameGuard.Enable", false);
     m_bool_configs[CONFIG_GAMEGUARD_WARDEN_ENABLE] = sConfig->GetBoolDefault("GameGuard.Warden", false);
-    m_int_configs[CONFIG_GAMEGUARD_GMLEVEL] = sConfig->GetIntDefault("Anticheat.GmLevel", 0);
-    m_int_configs[CONFIG_GAMEGUARD_ACTION_DELAY] = sConfig->GetIntDefault("Anticheat.DelayAfterAction", 30);
+    m_int_configs[CONFIG_GAMEGUARD_GMLEVEL] = sConfig->GetIntDefault("GameGuard.GmLevel", 0);
+    m_int_configs[CONFIG_GAMEGUARD_ACTION_DELAY] = sConfig->GetIntDefault("GameGuard.DelayAfterAction", 30);
 
     m_bool_configs[CONFIG_DURABILITY_LOSS_IN_PVP] = sConfig->GetBoolDefault("DurabilityLoss.InPvP", false);
 
