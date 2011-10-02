@@ -43,12 +43,8 @@ public:
         void Reset()
         {
             me->RestoreFaction();
-            // if we will have other way to assign this to only one npc remove this part
-            if (GUID_LOPART(me->GetGUID()) != 101030)
-            {
-                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
-                me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
-            }
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }
 
         void WaypointReached(uint32 i)
@@ -122,6 +118,8 @@ public:
             CAST_AI(npc_escortAI, (pCreature->AI()))->Start(true, false, pPlayer->GetGUID());
             CAST_AI(npc_escortAI, (pCreature->AI()))->SetMaxPlayerDistance(35.0f);
             pCreature->SetUnitMovementFlags(MOVEMENTFLAG_JUMPING);
+            pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+            pCreature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             DoScriptText(SAY_START_IRO, pCreature);
 
             switch (pPlayer->GetTeam()){
