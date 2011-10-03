@@ -153,7 +153,7 @@ public:
                         }
                         if (uiNewEntry)
                         {
-                            pCaster->CastedCreatureOrGO(pCreatureTarget->GetEntry(), 0, GetSpellInfo()->Id);
+                            pCaster->CastedCreatureOrGO(pCreatureTarget->GetEntry(), pCreatureTarget->GetGUID(), GetSpellInfo()->Id);
                             pCreatureTarget->UpdateEntry(uiNewEntry);
                             pCreatureTarget->DespawnOrUnsummon(DESPAWN_TIME);
                         }

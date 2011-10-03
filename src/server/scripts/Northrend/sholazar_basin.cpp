@@ -56,9 +56,7 @@ public:
 
             switch(i)
             {
-            case 1: SetRun(); break;
-            case 10:
-            case 11:
+            case 3: SetRun(); break;
             case 12:
             case 13:
             case 14:
@@ -66,15 +64,17 @@ public:
             case 16:
             case 17:
             case 18:
+            case 19:
+            case 20:
                 me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
                 me->RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING);
                 me->SetSpeed(MOVE_SWIM, 0.85f, true);
                 me->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_LEVITATING);
                 break;
-            case 19:
+            case 21:
                 me->SetUnitMovementFlags(MOVEMENTFLAG_JUMPING);
                 break;
-            case 28:
+            case 30:
                 if (Player* pPlayer = GetPlayerForEscort())
                     pPlayer->GroupEventHappens(QUEST_FORTUNATE_MISUNDERSTANDINGS, me);
               //  me->RestoreFaction();
