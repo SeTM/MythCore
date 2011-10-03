@@ -381,14 +381,16 @@ bool BattlegroundIC::SetupBattleground()
 
     for (uint8 i = 0; i < MAX_NORMAL_NPCS_SPAWNS; i++)
     {
-        if (!AddCreature(BG_IC_NpcSpawnlocs[i].entry, BG_IC_NpcSpawnlocs[i].type, BG_IC_NpcSpawnlocs[i].team,
-            BG_IC_NpcSpawnlocs[i].x, BG_IC_NpcSpawnlocs[i].y,
-            BG_IC_NpcSpawnlocs[i].z, BG_IC_NpcSpawnlocs[i].o,
-            RESPAWN_ONE_DAY))
+        Creature *temp = AddCreature(BG_IC_NpcSpawnlocs[i].entry, BG_IC_NpcSpawnlocs[i].type, BG_IC_NpcSpawnlocs[i].team,
+                                     BG_IC_NpcSpawnlocs[i].x, BG_IC_NpcSpawnlocs[i].y, BG_IC_NpcSpawnlocs[i].z, BG_IC_NpcSpawnlocs[i].o, 
+                                     RESPAWN_ONE_DAY);
+        if (!temp)
         {
             sLog->outError("Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[i].entry);
             return false;
         }
+        if (temp->GetEntry() == NPC_OVERLORD_AGMAR || temp->GetEntry() == NPC_HIGH_COMMANDER_HALFORD_WYRMBANE)
+            temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
     }
 
     if (!AddSpiritGuide(BG_IC_NPC_SPIRIT_GUIDE_1+5, BG_IC_SpiritGuidePos[5][0], BG_IC_SpiritGuidePos[5][1], BG_IC_SpiritGuidePos[5][2], BG_IC_SpiritGuidePos[5][3], ALLIANCE)
@@ -449,7 +451,10 @@ void BattlegroundIC::HandleKillUnit(Creature* unit, Player* killer)
     //Achievement Mowed Down
     // TO-DO: This should be done on the script of each vehicle of the BG.
     if (unit->IsVehicle())
+    {
         killer->CastSpell(killer, SPELL_DESTROYED_VEHICLE_ACHIEVEMENT, true);
+        unit->Relocate(unit->GetHomePosition()); // wrong wrong, but prevent respawn on die position
+    }
 }
 
 void BattlegroundIC::HandleKillPlayer(Player* player, Player* killer)
@@ -832,6 +837,9 @@ void BattlegroundIC::DestroyGate(Player* pl, GameObject* go, uint32 /*destroyedE
         UpdateWorldState(uws_open, 1);
     }
     DoorOpen((pl->GetTeamId() == TEAM_ALLIANCE ? BG_IC_GO_HORDE_KEEP_PORTCULLIS : BG_IC_GO_DOODAD_PORTCULLISACTIVE02));
+
+    if (Creature* boss = GetBGCreature(pl->GetTeamId() == TEAM_ALLIANCE ? BG_IC_NPC_OVERLORD_AGMAR : BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE))
+        boss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
     uint32 lang_entry = 0;
 
