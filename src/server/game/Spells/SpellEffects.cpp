@@ -1248,8 +1248,8 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     {
                         Player* pPlayer = (Player*)m_caster;
 
-                        uint32 faction_id = m_spellValue->EffectBasePoints[effIndex];
-                        int32  rep_change = m_spellValue->EffectBasePoints[EFFECT_1];
+                        uint32 faction_id = m_spellInfo->CalculateSimpleValue(effIndex);
+                        int32  rep_change = m_spellInfo->CalculateSimpleValue(EFFECT_1);
 
                         FactionEntry const* factionEntry = sFactionStore.LookupEntry(faction_id);
 

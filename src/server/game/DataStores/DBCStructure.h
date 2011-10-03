@@ -25,6 +25,7 @@
 #include "Path.h"
 #include "Util.h"
 #include "Vehicle.h"
+#include "SharedDefines.h"
 
 #include <map>
 #include <set>
@@ -1589,6 +1590,8 @@ struct SpellEntry
     float     EffectBonusMultiplier[MAX_SPELL_EFFECTS];     // 229-231  3.2.0
     //uint32  spellDescriptionVariableID;                   // 232      3.2.0
     //uint32  SpellDifficultyId;                            // 233      3.3.0
+
+    int32 CalculateSimpleValue(SpellEffIndex eff) const { return EffectBasePoints[eff] + int32(1); }
 
     private:
         // prevent creating custom entries (copy data from original in fact)
